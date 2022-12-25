@@ -34,6 +34,7 @@ function App() {
           <Route path="channel/:chname" element={<Navigate to="playlist" />} />
           <Route path="channel/:chname/playlist" element={!isMobile ? <ChannelPage subpage={0} /> : <MobileChannelPage subpage={0} />} />
           <Route path="channel/:chname/video" element={!isMobile ? <ChannelPage subpage={1} /> : <MobileChannelPage subpage={1} />} />
+          <Route path="channel/:chname/j" element={<ChannelPage subpage={99} />} />
           <Route path="channel/:chname/playlist/:listid" element={!isMobile ? <ChannelPage subpage={0} /> : <MobileChannelPage subpage={0} />} />
           <Route path="watch/:videoid" element={!isMobile ? <WatchPage /> : <MobileWatchPage />} />
           <Route path="josh" element={<JoshPage />} />
