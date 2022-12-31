@@ -177,7 +177,7 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
           />
         </VideoListDiscription>
       </VideoListListItemButton>
-      {isJosh &&
+      {isJosh === 'true' &&
         <>
           <ChatButton
             onClick={handleClickOpen}
