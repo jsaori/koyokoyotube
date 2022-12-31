@@ -6,10 +6,12 @@ import { Box, Tab, Tabs } from "@mui/material";
 
 import MobilePlayListPage from "./MobilePlayListPage";
 import MobileVideoPage from "./MobileVideoPage";
+import { useLocalStorage } from "../hooks/useLocalStrage";
+import JPage from "./JPage";
 
 //#region ユーザー定義スタイルコンポーネント
 const ChannelMainBox = styled(Box)({
-  maxWidth: 1280,
+  maxWidth: window.screen.width,
   margin: '0 auto'
 });
 
@@ -57,7 +59,7 @@ function a11yProps(index) {
 const TabPageKey = {
   0: "playlist",
   1: "video",
-  //99: "nanj"
+  99: "j"
 };
 
 /**
@@ -83,6 +85,8 @@ const TabPageKey = {
     navigate(`/channel/${chname}/${TabPageKey[newTabId]}`);
   };
 
+  const [isJosh] = useLocalStorage('josh', 'false');
+
   return (
     <>
       {/**
@@ -103,6 +107,7 @@ const TabPageKey = {
           >
             <Tab label="再生リスト" {...a11yProps(0)} disableRipple />
             <Tab label="動画一覧" {...a11yProps(1)} disableRipple />
+            {isJosh === 'true' && <Tab label="実況スレ登録" {...a11yProps(99)} disableRipple />}
           </Tabs>
         </ChannelMainBox>
       </ChannelPageContainer>
@@ -118,6 +123,12 @@ const TabPageKey = {
            * 動画一覧タブ - 1
            */}
           <MobileVideoPage chname={chname} />
+        </TabPanel>
+        <TabPanel value={tabId} index={99}>
+          {/**
+           * 動画一覧タブ - 99
+           */}
+          <JPage />
         </TabPanel>
       </ChannelMainBox>
     </>

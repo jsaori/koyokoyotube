@@ -1,19 +1,21 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import styled from "@emotion/styled";
-import { Box, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { Box, IconButton, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { format, intervalToDuration } from "date-fns";
 import ChatIcon from '@mui/icons-material/Chat';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import { isMobile } from "react-device-detect";
+import { useLocalStorage } from "../../hooks/useLocalStrage";
+import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 
 //#region ユーザー定義スタイルコンポーネント
 const VideoListListItem = styled(ListItem)(({ theme }) => ({
   height: !isMobile ? 108 : 72,
   '&:hover, &.Mui-selected:hover': {
     "& .MuiListItemButton-root": {
-      backgroundColor: theme.palette.control.light,
-      boxShadow: "0 0 3px #fe68ad",
+      backgroundColor: theme.palette.control.main,
       "& .PublicPlayListItemText-head": {
         color: theme.palette.primary.dark,
       }
@@ -70,10 +72,10 @@ const VideoListDiscription = styled(Box)(({ theme }) => ({
   minWidth: 0
 }));
 
-const ChatBox = styled(Box)(({ theme }) => ({
+const ChatButton = styled(IconButton)(({ theme }) => ({
   position: "absolute",
-  right: 8,
-  bottom: !isMobile ? 0 : -8,
+  right: 0,
+  bottom: 0,
 }));
 //#endregion
 
@@ -102,7 +104,18 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
     } else {
       return videoDuration[key];
     }
-  }).join(':')
+  }).join(':');
+
+  // Josh認証確認
+  const [isJosh] = useLocalStorage('josh', 'false');
+
+  const [openDialog, setOpenDialog] = useState(false);
+  const handleClickOpen = () => {
+    setOpenDialog(true);
+  };
+  const handleClose = () => {
+    setOpenDialog(false);
+  };
 
   return (
     <VideoListListItem
@@ -163,12 +176,31 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
             }}
           />
         </VideoListDiscription>
-        {comments &&
-          <ChatBox>
-            <ChatIcon fontSize="small" />
-          </ChatBox>
-        }
       </VideoListListItemButton>
+      {isJosh &&
+        <>
+          <ChatButton
+            onClick={handleClickOpen}
+          >
+            {comments ?
+              <ChatIcon
+                fontSize="small"
+              /> :
+              <AppRegistrationIcon
+                fontSize="small"
+                sx={{
+                  color: "primary.main"
+                }}
+              />
+            }
+          </ChatButton>
+          <RegistThreadDialog
+            open={openDialog}
+            onClose={handleClose}
+            youtubeid={videoId}
+          />
+        </>
+      }
     </VideoListListItem>
   )
 });
