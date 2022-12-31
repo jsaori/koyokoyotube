@@ -1,11 +1,12 @@
 {
   "name": "koyokoyotube",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "homepage": "/",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
+    "@hookform/resolvers": "^2.9.10",
     "@mui/icons-material": "^5.10.16",
     "@mui/material": "^5.10.15",
     "@testing-library/jest-dom": "^5.16.5",
@@ -26,7 +27,8 @@
     "react-scripts": "5.0.1",
     "react-use-measure": "^2.1.1",
     "react-virtualized-auto-sizer": "^1.0.7",
-    "react-window": "^1.8.8"
+    "react-window": "^1.8.8",
+    "yup": "^0.32.11"
   },
   "scripts": {
     "start": "react-scripts start",

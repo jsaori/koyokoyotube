@@ -1,11 +1,14 @@
 import styled from "@emotion/styled";
-import { Link, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import { Box } from "@mui/system";
+import { RegistThread } from "../components/RegistThread/RegistThread";
 
+//#region ユーザー定義スタイルコンポーネント
 const JBox = styled(Box)({
-  maxWidth: 1280,
-  ml: 'auto',
-  mr: 'auto'
+  maxWidth: "100%",
+  marginLeft: 16,
+  marginRight: 16,
+  paddingBottom: 40
 });
 
 const BodySectionTypography = styled(Typography)({
@@ -14,24 +17,18 @@ const BodySectionTypography = styled(Typography)({
   fontSize: '1rem',
 });
 
+//#endregion
 
 /**
- * 実況スレ確認タブページ
+ * 実況スレ登録タブページ
  */
 export default function JPage() {
   return (
     <JBox>
       <BodySectionTypography>
-        <Link href="https://docs.google.com/spreadsheets/d/1F26VrVqT-5cpsVrYCagZxouDRumJhtcYD7zGECT6Eac/edit?usp=sharing" rel="noopener noreferrer" target="_blank" underline="always">Youtube動画IDと実況スレを紐づけたスプレッドシート</Link>
-        <br /><br />
+        実況スレ登録ページです. 定期的に実行される処理にてコメントに反映されます.
       </BodySectionTypography>
-      <BodySectionTypography>
-        上記スプレッドシート上でYoutube動画IDと5ch実況スレの紐づけを行っています。<br />
-        スプレッドシートの内容を定期的に取り込みKoyoKoyoTubeにコメントを反映するようになっています。<br />
-        再生リストや動画一覧にないYoutube動画IDについては動画閲覧ページのURLを変更してください。<br />
-        <br />
-        例） https://koyokoyotube.web.app/watch/Youtube動画ID
-      </BodySectionTypography>
+      <RegistThread />
     </JBox>
   );
 }

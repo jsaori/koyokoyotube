@@ -108,7 +108,7 @@ export default function ChannelPage({ subpage }) {
           >
             <Tab label="再生リスト" {...a11yProps(0)} disableRipple />
             <Tab label="動画一覧" {...a11yProps(1)} disableRipple />
-            {isJosh === 'true' && <Tab label="実況スレ確認" {...a11yProps(99)} disableRipple />}
+            {isJosh === 'true' && <Tab label="実況スレ登録" {...a11yProps(99)} disableRipple />}
           </Tabs>
         </ChannelMainBox>
       </ChannelPageContainer>
