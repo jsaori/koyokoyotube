@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
-import { Typography } from "@mui/material";
-import { Box } from "@mui/system";
+import { Box, Typography } from "@mui/material";
 import { PendingThread } from "../components/PendingThread/PendingThread";
 import { RegistThread } from "../components/RegistThread/RegistThread";
 

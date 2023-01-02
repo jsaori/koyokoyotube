@@ -1,7 +1,6 @@
 import { memo } from "react";
 
-import { List } from "@mui/material";
-import { Box } from "@mui/system";
+import { Box, List } from "@mui/material";
 import { VideoListSideContainerItem } from "./VideoListSideContainerItem";
 /**
  * サイドバーリスト

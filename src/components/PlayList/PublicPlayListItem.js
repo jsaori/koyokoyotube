@@ -2,8 +2,7 @@ import { memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import styled from "@emotion/styled";
-import { ListItem, ListItemButton, ListItemText } from "@mui/material";
-import { Box } from "@mui/system";
+import { Box, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { format } from "date-fns";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { isMobile } from "react-device-detect";

@@ -1,8 +1,7 @@
 import { memo, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { List } from "@mui/material";
-import { Box } from "@mui/system";
+import { Box, List } from "@mui/material";
 
 import { PlayListSideContainerIconItem, PlayListSideContainerItem } from "./PlayListSideContainerItem";
 

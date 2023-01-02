@@ -1,8 +1,9 @@
 import React, { memo, useEffect, useState } from "react";
+
 import styled from "@emotion/styled";
-import { Box } from "@mui/system";
+import { Box, Link, Typography } from "@mui/material";
+
 import { useRealtimeDBListener } from "../../hooks/useRealtimeDB";
-import { Link, Typography } from "@mui/material";
 import { useGetYoutubeTitle } from "../../hooks/useYoutubeInfo";
 
 //#region ユーザー定義スタイルコンポーネント

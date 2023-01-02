@@ -1,5 +1,7 @@
-import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 import { memo } from "react";
+
+import { Dialog, DialogContent, DialogTitle } from "@mui/material";
+
 import { RegistThread } from "./RegistThread";
 
 export const RegistThreadDialog = memo((props) => {
