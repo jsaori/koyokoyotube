@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { Typography } from "@mui/material";
 import { Box } from "@mui/system";
+import { PendingThread } from "../components/PendingThread/PendingThread";
 import { RegistThread } from "../components/RegistThread/RegistThread";
 
 //#region ユーザー定義スタイルコンポーネント
@@ -29,6 +30,7 @@ export default function JPage() {
         実況スレ登録ページです. 定期的に実行される処理にてコメントに反映されます.
       </BodySectionTypography>
       <RegistThread />
+      <PendingThread sx={{ pt: 5 }} />
     </JBox>
   );
 }

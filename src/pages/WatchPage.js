@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import styled from "@emotion/styled";
 import { Box } from "@mui/material";
-import axios from "axios";
 
 import { WatchVideoHeader } from "../components/WatchVideoContents/WatchVideoHeader";
 import { WatchVideoMain } from "../components/WatchVideoContents/WatchVideoMain";
+import { useGetYoutubeTitle } from "../hooks/useYoutubeInfo";
 
 const WatchPageFullWidth = styled(Box)({
   maxWidth: 1664,
@@ -27,13 +26,7 @@ export default function WatchPage() {
 
   // 動画タイトルの取得
   // Youtubeのメタ情報から取得する
-  const [title, setTitle] = useState("");
-  useEffect(() => {
-    if (!videoid) return;
-    const reqURL = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoid}&format=json`;
-    axios.get(reqURL)
-      .then((res) => setTitle(res.data.title));
-  }, [videoid]);
+  const [title] = useGetYoutubeTitle(videoid);
 
   return (
     <WatchPageFullWidth>
