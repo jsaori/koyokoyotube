@@ -7,6 +7,7 @@ import { format, intervalToDuration } from "date-fns";
 import ChatIcon from '@mui/icons-material/Chat';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import { isMobile } from "react-device-detect";
+
 import { useLocalStorage } from "../../hooks/useLocalStrage";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 

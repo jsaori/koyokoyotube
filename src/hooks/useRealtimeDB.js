@@ -1,6 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { get, ref, update } from "firebase/database";
+import { equalTo, get, onValue, orderByChild, query, ref, update } from "firebase/database";
 
 import { realtimedb } from "../libs/InitFirebase";
 
@@ -29,6 +29,28 @@ export function useGetRealtimeDB(
   }, []);
 
   return [data, getData, resetData];
+}
+
+// Realtime Databaseの値イベントリッスンを管理するHOOK
+export function useRealtimeDBListener(
+  initialState,
+  path,
+  filterKey,
+  filterValue
+) {
+  const [data, setData] = useState(initialState);
+
+  // listener
+  useEffect(() => {
+    const dataRef = query(ref(realtimedb, path), orderByChild(filterKey), equalTo(filterValue));
+    onValue(dataRef, (snapshot) => {
+      const val = snapshot.val();
+      if (!val) return;
+      setData(val);
+    })
+  }, [path, filterKey, filterValue, setData]);
+
+  return [data];
 }
 
 /**

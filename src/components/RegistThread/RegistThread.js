@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useState } from "react";
+
 import styled from "@emotion/styled";
-import { Backdrop, Button, Checkbox, CircularProgress, FormControlLabel, IconButton, Snackbar, Stack, TextField } from "@mui/material";
-import { Box } from "@mui/system";
+import { Backdrop, Box, Button, Checkbox, CircularProgress, FormControlLabel, IconButton, Snackbar, Stack, TextField } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 import LockIcon from '@mui/icons-material/Lock';
 import AddIcon from '@mui/icons-material/Add';
@@ -9,8 +9,9 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
+
 import { useGetRealtimeDB, useUpdateRealtimeDB } from "../../hooks/useRealtimeDB";
-import axios from "axios";
+import { useGetYoutubeTitle } from "../../hooks/useYoutubeInfo";
 
 //#region ユーザー定義スタイルコンポーネント
 const JBox = styled(Box)((theme) => ({
@@ -202,14 +203,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   }, [registeredData, setValue]);
 
   // Youtube動画タイトル取得
-   // Youtubeのメタ情報から取得する
-   const [title, setTitle] = useState("");
-   useEffect(() => {
-    if (youtubeId === "") return;
-     const reqURL = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${youtubeId}&format=json`;
-     axios.get(reqURL)
-       .then((res) => setTitle(res.data.title));
-   }, [youtubeId]);
+  const [title] = useGetYoutubeTitle(youtubeId)
 
   return (
     <JBox>

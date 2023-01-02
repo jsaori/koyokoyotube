@@ -4,9 +4,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { Box, Pagination, Typography } from "@mui/material";
 import queryString from "query-string";
+import { isMobile } from "react-device-detect";
 
 import { SearchBar } from "../SearchBar/SearchBar";
-import { isMobile } from "react-device-detect";
 
 //#region ユーザー定義スタイルコンポーネント
 const VideoListSelect = styled("select")(({ theme }) => ({

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Box } from "@mui/system";
+import { Box } from "@mui/material";
 
 import { VideoList } from "../components/VideoList/VideoList";
 import { VideoListSideContainer } from "../components/SideContainer/VideoListSideContainer";
