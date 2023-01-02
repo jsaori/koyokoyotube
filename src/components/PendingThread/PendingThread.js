@@ -42,14 +42,17 @@ export const PendingThread = memo(({ sx }) => {
   const [, getTitle] = useGetYoutubeTitle("");
   const [titles, setTitles] = useState({});
   useEffect(() => {
-    let obj = {};
-    Object.keys(pendingData).map(async (key) => {
-      if (key === "") return;
-      if (obj[key]) return;
-      obj[key] = {};
-      obj[key].title = await getTitle(key);
-    });
-    setTitles((titles) => Object.assign(obj, titles));
+    const exec = async () => {
+      let obj = {};
+      await Promise.all(Object.keys(pendingData).map(async (key) => {
+        if (key === "") return;
+        if (obj[key]) return;
+        obj[key] = {};
+        obj[key].title = await getTitle(key);
+      }));
+      setTitles((titles) => Object.assign(obj, titles));
+    };
+    exec();
   }, [pendingData, getTitle]);
 
   return (
@@ -62,14 +65,14 @@ export const PendingThread = memo(({ sx }) => {
       <BodySectionTypography>
         登録して頂いた情報が以下にリアルタイムで反映されます.<br />
         ここから表示が消えればコメント登録が完了しております.<br />
-        ※動画にコメントが反映されていない場合キャッシュを削除すれば反映されるかもしれません※<br /><br />
+        ※動画にコメントが反映されていない場合キャッシュを削除すれば反映されるかもしれません.もしくはバグ※<br /><br />
       </BodySectionTypography>
       {Object.keys(pendingData).map((key, index) => (
         <React.Fragment key={index}>
           <Link href={`https://www.youtube.com/watch?v=${key}`} rel="noopener noreferrer" target="_blank" underline="always">{titles[key]?.title}</Link>
           {pendingData[key].threads.map((thread, i) => (
             <URLTypography key={i}>
-              {`${pendingData[key].threads[i].url}`}<br />
+              {`${thread.url}`}<br />
             </URLTypography>
           ))}
         </React.Fragment>
