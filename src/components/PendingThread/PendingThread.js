@@ -64,7 +64,7 @@ export const PendingThread = memo(({ sx }) => {
       </SubSectionTypography>
       <BodySectionTypography>
         登録して頂いた情報が以下にリアルタイムで反映されます.<br />
-        ここから表示が消えればコメント登録が完了しております.<br />
+        ここから表示が消えればコメント登録が完了しています.<br />
         ※動画にコメントが反映されていない場合キャッシュを削除すれば反映されるかもしれません.もしくはバグ※<br /><br />
       </BodySectionTypography>
       {Object.keys(pendingData).map((key, index) => (

@@ -37,7 +37,7 @@ export default function JPage() {
       <BodySectionTypography>
         Youtubeの動画に5ch実況スレを登録することができます.<br />
         現在は１時間に１動画分のコメント生成を行っています.<br /><br />
-        「同時視聴」はこよりの配信がないときに開始時間を合わせて実況したスレを登録する際に使用します.<br />
+        「同時視聴」はアーカイブを実況したスレを登録する際に使用します.<br />
         ※旧スプシの同時視聴／現スプシのセルフに対応します※<br />
       </BodySectionTypography>
       <RegistThread />
