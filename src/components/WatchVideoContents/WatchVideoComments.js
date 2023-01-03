@@ -9,9 +9,13 @@ import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import CommentsDisabledIcon from '@mui/icons-material/CommentsDisabled';
 import DownloadIcon from '@mui/icons-material/Download';
 import FileDownloadOffIcon from '@mui/icons-material/FileDownloadOff';
+import FlagIcon from '@mui/icons-material/Flag';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 
 import { useLocalStorage } from "../../hooks/useLocalStrage";
 import { isMobile } from "react-device-detect";
+import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
+import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPanelMenuContainer = styled(Box)(({ theme }) => ({
@@ -103,7 +107,7 @@ const CommentTypeSelect = styled("select")(({ theme }) => ({
  * コメントパネル表示部
  * WatchVideoNavigationが長大になってきたので分けた
  */
-export const WatchVideoComments = memo(({ sx, thread, commentDisp, handleChangeCommentDisp, commentIndex }) => {
+export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, commentIndex }) => {
   // Josh認証確認
   const [isJosh] = useLocalStorage('josh', 'false');
 
@@ -120,6 +124,24 @@ export const WatchVideoComments = memo(({ sx, thread, commentDisp, handleChangeC
     // リストをコメントに合わせて自動スクロール
     commentlistRef.current?.scrollTo((commentIndex - Math.floor(commentlistRef.current.props.height / commentlistRef.current.props.itemSize) + 1) * commentlistRef.current.props.itemSize)
   }, [commentIndex, autoScroll]);
+
+  // 実況スレ登録ダイアログ表示
+  const [openRegistDialog, setOpenRegistDialog] = useState(false);
+  const handleRegistOpen = () => {
+    setOpenRegistDialog(true);
+  };
+  const handleRegistClose = () => {
+    setOpenRegistDialog(false);
+  };
+
+  // 動画報告ダイアログの表示
+  const [openReportDialog, setOpenReportDialog] = useState(false);
+  const handleReportOpen = () => {
+    setOpenReportDialog(true);
+  };
+  const handleReportClose = () => {
+    setOpenReportDialog(false);
+  };
 
   const renderRow = ({index, style}) => {
     return (
@@ -177,6 +199,32 @@ export const WatchVideoComments = memo(({ sx, thread, commentDisp, handleChangeC
           >
             {commentDisp ? <InsertCommentIcon /> : <CommentsDisabledIcon />}
           </IconButton>
+          {isJosh === "true" && (
+            <>
+              <IconButton
+                disableRipple
+                onClick={handleRegistOpen}
+              >
+                <AppRegistrationIcon />
+              </IconButton>
+              <IconButton
+                disableRipple
+                onClick={handleReportOpen}
+              >
+                <FlagIcon />
+              </IconButton>
+              <RegistThreadDialog
+                 open={openRegistDialog}
+                 onClose={handleRegistClose}
+                 youtubeid={id}
+              />
+              <VideoReportForm
+                open={openReportDialog}
+                onClose={handleReportClose}
+                youtubeid={id}
+              />
+            </>
+          )}
         </WatchVideoMainPanelMenuContents>
       </WatchVideoMainPanelMenuContainer>
       {/**

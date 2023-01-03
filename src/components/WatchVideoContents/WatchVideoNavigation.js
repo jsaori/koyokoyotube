@@ -89,6 +89,7 @@ export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleC
            * コメントパネル
            */}
           <WatchVideoComments
+            id={id}
             thread={thread}
             commentDisp={commentDisp}
             handleChangeCommentDisp={handleChangeCommentDisp}
