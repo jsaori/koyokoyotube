@@ -7,6 +7,7 @@ import { format, intervalToDuration } from "date-fns";
 import ChatIcon from '@mui/icons-material/Chat';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import { isMobile } from "react-device-detect";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 import { useLocalStorage } from "../../hooks/useLocalStrage";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
@@ -46,7 +47,7 @@ const VideoListMediaContainer = styled(Box)(({ theme }) => ({
   verticalAlign: "top"
 }));
 
-const VideoListMediaImage = styled(Box)(({ theme }) => ({
+const VideoListMediaImage = styled(LazyLoadImage)(({ theme }) => ({
   width: !isMobile ? 192 : 128,
   height: !isMobile ? 108 : 72,
   margin: 0,

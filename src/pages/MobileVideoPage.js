@@ -15,7 +15,7 @@ const VideoBox = styled(Box)({
  * チャンネルページ内の動画一覧タブページ
  */
  export default function MobileVideoPage({ chname }) {
-  const videos = useFireStorage(`data/video/${CHANNEL_ID_LIST[chname]}/videos.json`, null);
+  const videos = useFireStorage(`data/video/${CHANNEL_ID_LIST[chname]}/videos.gz`, null);
 
   return (
     <VideoBox>

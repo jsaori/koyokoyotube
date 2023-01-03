@@ -56,7 +56,9 @@ const PublicPlayListMediaBox = styled(LazyLoadImage)({
   overflow: "hidden",
   position: "relative",
   verticalAlign: "top",
-  width: "100%"
+  height: 54,
+  width: 96,
+  objectFit: "cover"
 });
 
 const PublicPlayListMediaContainer = styled(Box)({
@@ -145,12 +147,12 @@ export const PublicPlayListItem = memo(({ sx, playlistId, playlistTitle, updateA
               >
                 {index < 2 ? (
                   <PublicPlayListMediaBox
-                    src={`https://i.ytimg.com/vi/${video.id}/mqdefault.jpg`}
+                    src={`https://i.ytimg.com/vi/${video.id}/default.jpg`}
                   />
                 ) : (
                   <PublicPlayListMediaBeforeBox>
                     <PublicPlayListMediaBox
-                      src={`https://i.ytimg.com/vi/${video.id}/mqdefault.jpg`}
+                      src={`https://i.ytimg.com/vi/${video.id}/default.jpg`}
                     />
                   </PublicPlayListMediaBeforeBox>
                 )}

@@ -17,8 +17,8 @@ export function useFireStorage(
 
   useEffect(() => {
     if (!path || path === "") return;
-    // Josh認証が通らなければthread.jsonはダウンロードしない
-    if (path.match(/thread.json/) && isJosh === 'false') return;
+    // Josh認証が通らなければthread.gzはダウンロードしない
+    if (path.match(/thread.gz/) && isJosh === 'false') return;
     const getData = async () => {
       await getBlob(ref(firestorage, path))
         .then((blob) => {
