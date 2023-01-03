@@ -147,12 +147,12 @@ export const PublicPlayListItem = memo(({ sx, playlistId, playlistTitle, updateA
               >
                 {index < 2 ? (
                   <PublicPlayListMediaBox
-                    src={`https://i.ytimg.com/vi/${video.id}/default.jpg`}
+                    src={`https://i.ytimg.com/vi_webp/${video.id}/default.webp`}
                   />
                 ) : (
                   <PublicPlayListMediaBeforeBox>
                     <PublicPlayListMediaBox
-                      src={`https://i.ytimg.com/vi/${video.id}/default.jpg`}
+                      src={`https://i.ytimg.com/vi_webp/${video.id}/default.webp`}
                     />
                   </PublicPlayListMediaBeforeBox>
                 )}

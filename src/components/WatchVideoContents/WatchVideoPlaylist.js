@@ -106,7 +106,7 @@ export const WatchVideoPlaylist = memo(({ sx, id }) => {
         >
           <WatchVideoPlaylistIcon
             component="img"
-            src={`https://i.ytimg.com/vi/${videosData[index].id}/mqdefault.jpg`}
+            src={`https://i.ytimg.com/vi_webp/${videosData[index].id}/mqdefault.webp`}
           />
           <WatchVideoPlaylistTitle>
             {videosData[index].title}
