@@ -22,7 +22,7 @@ const WatchVideoMainContainer = styled(Box)({
  */
 export const WatchVideoMain = memo(({ sx, id }) => {
   // 動画idに紐づくコメントリストを取得
-  let thread = useFireStorage(`data/comments/${id}/thread.json`, null);
+  let thread = useFireStorage(`data/comments/${id}/thread.gz`, null);
   const sortedThread = useMemo(() => {
     if (!thread) return null;
     // ソートのコストを考慮しメモ化

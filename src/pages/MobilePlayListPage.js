@@ -14,7 +14,7 @@ const PlayListBox = styled(Box)({
  * チャンネルページ内の再生リストタブページ
  */
  export default function MobilePlayListPage({ chname }) {
-  const playlist = useFireStorage(`data/playlist/${CHANNEL_ID_LIST[chname]}/playlist.json`, null);
+  const playlist = useFireStorage(`data/playlist/${CHANNEL_ID_LIST[chname]}/playlist.gz`, null);
 
   return (
     <PlayListBox>

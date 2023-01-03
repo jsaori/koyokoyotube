@@ -16,7 +16,7 @@ export function usePlayingVideo() {
   const channel = ('channel' in query) ? query.channel : "";
   const playlistId = ('playlist' in query) ? query.playlist : "";
   const sort = ('sort' in query) ? query.sort : "publishDesc";
-  const playlistPath = playlistId !== "" ? `data/playlist/${CHANNEL_ID_LIST[channel]}/playlist.json` : "";
+  const playlistPath = playlistId !== "" ? `data/playlist/${CHANNEL_ID_LIST[channel]}/playlist.gz` : "";
   const playlist = useFireStorage(playlistPath, null);
   const videoId = useParams().videoid;
 
