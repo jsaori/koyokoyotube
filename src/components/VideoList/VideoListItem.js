@@ -133,7 +133,7 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
             <VideoListMediaImage
               component="img"
               alt=''
-              src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`}
+              src={`https://i.ytimg.com/vi_webp/${videoId}/mqdefault.webp`}
             />
             <VideoListMediaText>
               {durationString}
