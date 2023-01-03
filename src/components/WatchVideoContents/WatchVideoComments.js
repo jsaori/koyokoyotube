@@ -8,12 +8,14 @@ import { Box, IconButton } from "@mui/material";
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import CommentsDisabledIcon from '@mui/icons-material/CommentsDisabled';
 import DownloadIcon from '@mui/icons-material/Download';
-import FlagIcon from '@mui/icons-material/Flag';
 import FileDownloadOffIcon from '@mui/icons-material/FileDownloadOff';
+import FlagIcon from '@mui/icons-material/Flag';
+import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 
 import { useLocalStorage } from "../../hooks/useLocalStrage";
 import { isMobile } from "react-device-detect";
 import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
+import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPanelMenuContainer = styled(Box)(({ theme }) => ({
@@ -123,13 +125,22 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
     commentlistRef.current?.scrollTo((commentIndex - Math.floor(commentlistRef.current.props.height / commentlistRef.current.props.itemSize) + 1) * commentlistRef.current.props.itemSize)
   }, [commentIndex, autoScroll]);
 
-  // 動画報告ダイアログの表示
-  const [openDialog, setOpenDialog] = useState(false);
-  const handleClickOpen = () => {
-    setOpenDialog(true);
+  // 実況スレ登録ダイアログ表示
+  const [openRegistDialog, setOpenRegistDialog] = useState(false);
+  const handleRegistOpen = () => {
+    setOpenRegistDialog(true);
   };
-  const handleClose = () => {
-    setOpenDialog(false);
+  const handleRegistClose = () => {
+    setOpenRegistDialog(false);
+  };
+
+  // 動画報告ダイアログの表示
+  const [openReportDialog, setOpenReportDialog] = useState(false);
+  const handleReportOpen = () => {
+    setOpenReportDialog(true);
+  };
+  const handleReportClose = () => {
+    setOpenReportDialog(false);
   };
 
   const renderRow = ({index, style}) => {
@@ -188,17 +199,32 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
           >
             {commentDisp ? <InsertCommentIcon /> : <CommentsDisabledIcon />}
           </IconButton>
-          <IconButton
-            disableRipple
-            onClick={handleClickOpen}
-          >
-            <FlagIcon />
-          </IconButton>
-          <VideoReportForm
-            open={openDialog}
-            onClose={handleClose}
-            youtubeid={id}
-          />
+          {isJosh === "true" && (
+            <>
+              <IconButton
+                disableRipple
+                onClick={handleRegistOpen}
+              >
+                <AppRegistrationIcon />
+              </IconButton>
+              <IconButton
+                disableRipple
+                onClick={handleReportOpen}
+              >
+                <FlagIcon />
+              </IconButton>
+              <RegistThreadDialog
+                 open={openRegistDialog}
+                 onClose={handleRegistClose}
+                 youtubeid={id}
+              />
+              <VideoReportForm
+                open={openReportDialog}
+                onClose={handleReportClose}
+                youtubeid={id}
+              />
+            </>
+          )}
         </WatchVideoMainPanelMenuContents>
       </WatchVideoMainPanelMenuContainer>
       {/**
