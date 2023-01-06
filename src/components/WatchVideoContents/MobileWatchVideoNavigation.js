@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 import { Box, Tab, Tabs } from "@mui/material";
 import { WatchVideoComments } from "./WatchVideoComments";
 import { WatchVideoPlaylist } from "./WatchVideoPlaylist";
+import { WatchVideoTimeStamp } from "./WatchVideoTimeStamp";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPanelContainer = styled(Box)(({ theme }) => ({
@@ -56,7 +57,7 @@ function a11yProps(index) {
 /**
  * 動画横のコメント表示/プレイリスト動画表示を行う
  */
-export const MobileWatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, commentIndex }) => {
+export const MobileWatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, commentIndex, timeStamp }) => {
   // 選択されているタブを管理
   const [tabId, setTabId] = useState(0);
   const handleTabIdChange = (event, newTabId) => {
@@ -75,8 +76,9 @@ export const MobileWatchVideoNavigation = memo(({ sx, id, thread, commentDisp, h
         variant="fullWidth"
         aria-label="tabs"
       >
-        <Tab label="コメントリスト" {...a11yProps(0)} disableRipple />
-        <Tab label="動画リスト" {...a11yProps(1)} disableRipple />
+        <Tab label="コメント" {...a11yProps(0)} disableRipple />
+        <Tab label="スタンプ" {...a11yProps(1)} disableRipple />
+        <Tab label="動画リスト" {...a11yProps(2)} disableRipple />
       </Tabs>
       {/**
        * 以下コメント欄ボディ部
@@ -94,7 +96,15 @@ export const MobileWatchVideoNavigation = memo(({ sx, id, thread, commentDisp, h
             commentIndex={commentIndex}
           />
         </TabPanel>
-        <TabPanel value={tabId} index={1}>
+        <TabPanel  value={tabId} index={1}>
+          {/**
+           * タイムスタンプパネル
+           */}
+          <WatchVideoTimeStamp
+            timeStamp={timeStamp}
+          />
+        </TabPanel>
+        <TabPanel value={tabId} index={2}>
           {/**
            * 関連動画パネル
            */}

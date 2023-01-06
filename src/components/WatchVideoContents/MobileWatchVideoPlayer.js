@@ -10,6 +10,7 @@ import { YoutubePlayer } from "../YoutubePlayer/YoutubePlayer";
 import { useYoutubePlayer } from "../../hooks/useYoutubePlayer";
 import { useStreamComments } from "../../hooks/useStreamComments";
 import { usePlayingVideo } from "../../hooks/usePlayingVideo";
+import { useLocation } from "react-router-dom";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPlayerContainer = styled(Box)(({ theme }) => ({
@@ -80,6 +81,12 @@ export const MobileWatchVideoPlayer = memo(({ sx, id, thread, commentDisp, handl
     width: '100%',
     height: '100%'
   });
+
+  const state = useLocation().state;
+  useEffect(() => {
+    if (!playerInstance || !state) return;
+    playerInstance.seekTo(state.jumpTime);
+  }, [playerInstance, state]);
 
   // ※動画が変遷する度にonStateChangeの実行回数が増えていくことに気付く※
   // Youtube Iframe APIのイベントリスナーはaddはできてもremoveできないバグがある

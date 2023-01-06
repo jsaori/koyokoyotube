@@ -4,7 +4,7 @@ import styled from "@emotion/styled";
 import { Box, Link, Typography } from "@mui/material";
 
 import { useRealtimeDBListener } from "../../hooks/useRealtimeDB";
-import { useGetYoutubeTitle } from "../../hooks/useYoutubeInfo";
+import { getVideoTitle } from "../../libs/initYoutube";
 
 //#region ユーザー定義スタイルコンポーネント
 const JBox = styled(Box)((theme) => ({
@@ -39,7 +39,6 @@ export const PendingThread = memo(({ sx }) => {
   // 登録待ち情報取得
   const [pendingData] = useRealtimeDBListener({"": {threads: []}}, "/thread", "update", true);
   // タイトル
-  const [, getTitle] = useGetYoutubeTitle("");
   const [titles, setTitles] = useState({});
   useEffect(() => {
     const exec = async () => {
@@ -48,12 +47,12 @@ export const PendingThread = memo(({ sx }) => {
         if (key === "") return;
         if (obj[key]) return;
         obj[key] = {};
-        obj[key].title = await getTitle(key);
+        obj[key].title = await getVideoTitle(key);
       }));
       setTitles((titles) => Object.assign(obj, titles));
     };
     exec();
-  }, [pendingData, getTitle]);
+  }, [pendingData]);
 
   return (
     <JBox

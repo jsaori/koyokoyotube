@@ -19,7 +19,8 @@ import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPanelMenuContainer = styled(Box)(({ theme }) => ({
-  borderBottom: "1px solid #e5e5e5",
+  borderBottom: "1px solid",
+  borderColor: theme.palette.paper.contrastBorder,
   height: 40,
   paddingLeft : 16,
   paddingRight: 8,

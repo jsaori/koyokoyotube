@@ -5,6 +5,7 @@ import styled from "@emotion/styled";
 import useMeasure from "react-use-measure";
 import Konva from "konva";
 import { Layer, Stage, Text } from "react-konva";
+import { useLocation } from "react-router-dom";
 
 import { YoutubePlayer } from "../YoutubePlayer/YoutubePlayer";
 import { useYoutubePlayer } from "../../hooks/useYoutubePlayer";
@@ -96,6 +97,12 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, handleComme
     width: '100%',
     height: '100%'
   });
+
+  const state = useLocation().state;
+  useEffect(() => {
+    if (!playerInstance || !state) return;
+    playerInstance.seekTo(state.jumpTime);
+  }, [playerInstance, state]);
 
   // ※動画が変遷する度にonStateChangeの実行回数が増えていくことに気付く※
   // Youtube Iframe APIのイベントリスナーはaddはできてもremoveできないバグがある

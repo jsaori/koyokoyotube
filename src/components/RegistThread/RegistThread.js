@@ -11,7 +11,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { useGetRealtimeDB, useUpdateRealtimeDB } from "../../hooks/useRealtimeDB";
-import { useGetYoutubeTitle } from "../../hooks/useYoutubeInfo";
+import { getVideoTitle } from "../../libs/initYoutube";
 
 //#region ユーザー定義スタイルコンポーネント
 const JBox = styled(Box)((theme) => ({
@@ -203,7 +203,14 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   }, [registeredData, setValue]);
 
   // Youtube動画タイトル取得
-  const [title] = useGetYoutubeTitle(youtubeId)
+  const [title, setTitle] = useState("");
+  useEffect(() => {
+    const getTitle = async () => {
+      const res = await getVideoTitle(youtubeId);
+      setTitle(res);
+    };
+    getTitle();
+  }, [youtubeId]);
 
   return (
     <JBox>
