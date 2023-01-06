@@ -5,7 +5,8 @@ import { Box } from "@mui/material";
 
 import { WatchVideoHeader } from "../components/WatchVideoContents/WatchVideoHeader";
 import { WatchVideoMain } from "../components/WatchVideoContents/WatchVideoMain";
-import { useGetYoutubeTitle } from "../hooks/useYoutubeInfo";
+import { useEffect, useState } from "react";
+import { getVideoTitle } from "../libs/initYoutube";
 
 const WatchPageFullWidth = styled(Box)({
   maxWidth: 1664,
@@ -26,7 +27,14 @@ export default function WatchPage() {
 
   // 動画タイトルの取得
   // Youtubeのメタ情報から取得する
-  const [title] = useGetYoutubeTitle(videoid);
+  const [title, setTitle] = useState("");
+  useEffect(() => {
+    const getTitle = async () => {
+      const res = await getVideoTitle(videoid);
+      setTitle(res);
+    };
+    getTitle();
+  }, [videoid]);
 
   return (
     <WatchPageFullWidth>

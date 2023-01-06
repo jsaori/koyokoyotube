@@ -6,6 +6,7 @@ import { Box } from "@mui/material";
 import { WatchVideoNavigation } from "./WatchVideoNavigation";
 import { WatchVideoPlayer } from "./WatchVideoPlayer";
 import { useFireStorage } from "../../hooks/useFireStorage";
+import { getTimeStamp } from "../../libs/initYoutube";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainContainer = styled(Box)({
@@ -30,6 +31,16 @@ export const WatchVideoMain = memo(({ sx, id }) => {
     return thread;
   }, [thread]);
 
+  // 動画idに紐づくタイムスタンプを取得
+  const [timeStamp, setTimeStamp] = useState([]);
+  useMemo(() => {
+    const getStamp = async () => {
+      const stamp = await getTimeStamp(id);
+      setTimeStamp(stamp);
+    };
+    getStamp();
+  }, [id]);
+
   // ナビゲーションパネルにコメント非表示ボタンを設置する
   // それにともないナビゲーションパネルにおける変更をここで検知しプレイヤーにわたす必要がある
   const [commentDisp, setCommentDisp] = useState(true);
@@ -52,7 +63,7 @@ export const WatchVideoMain = memo(({ sx, id }) => {
       {/**
        * ナビゲーションパネル
        */}
-      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} commentIndex={commentIndex} />
+      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} commentIndex={commentIndex} timeStamp={timeStamp} />
     </WatchVideoMainContainer>
   )
 });
