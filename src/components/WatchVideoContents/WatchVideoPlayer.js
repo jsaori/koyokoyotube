@@ -6,6 +6,7 @@ import useMeasure from "react-use-measure";
 import Konva from "konva";
 import { Layer, Stage, Text } from "react-konva";
 import { useLocation } from "react-router-dom";
+import { FullScreen } from "react-full-screen";
 
 import { YoutubePlayer } from "../YoutubePlayer/YoutubePlayer";
 import { useYoutubePlayer } from "../../hooks/useYoutubePlayer";
@@ -88,7 +89,7 @@ const CommentText = (props) => {
 /**
  * 動画の再生および流れるコメントの表示を行う
  */
-export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, handleCommentIndex }) => {
+export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, handleCommentIndex, handleFullscreen }) => {
   // Youtubeプレイヤーロード
   const { playerInstance, ...ytPlayerProps } = useYoutubePlayer({
     mountId: 'youtubeplayer',
@@ -197,52 +198,56 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, handleComme
       {/**
        * プレイヤー部分
        */}
-      <WatchVideoMainPlayer>
-        {/**
-         * コメントレンダラ
-         */}
-        <WatchVideoMainPlayerLayer
-          zIndex={2}
-          ref={ref}
-          sx={{
-            pointerEvents: "none"
-          }}
-        >
-          <Stage
-            width={bounds.width}
-            height={bounds.height}
+      <FullScreen
+        handle={handleFullscreen}
+      >
+        <WatchVideoMainPlayer>
+          {/**
+           * コメントレンダラ
+           */}
+          <WatchVideoMainPlayerLayer
+            zIndex={2}
+            ref={ref}
+            sx={{
+              pointerEvents: "none"
+            }}
           >
-            <Layer>
-              {/**
-               * fontSize = 表示高さ / 15
-               * y = 表示高さ / 11 * 0 + 10
-               * くらいが丁度良い
-               */}
-              {comments.map((comment, i) => (
-                <CommentText
-                  key={comment.id}
-                  text={comment.text}
-                  x={bounds.width}
-                  y={bounds.height / 11 * (comment.lane) + 10}
-                  fontSize={bounds.height / 15}
-                  fontStyle="700"
-                  isPlaying={isPlaying}
-                  line={comment.line}
-                  visible={commentDisp}
-                />
-              ))}
-            </Layer>
-          </Stage>
-        </WatchVideoMainPlayerLayer>
-        {/**
-         * ビデオレンダラ
-         */}
-        <WatchVideoMainPlayerLayer
-          zIndex={1}
-        >
-          <YoutubePlayer {...ytPlayerProps} hidden={!playerInstance} />
-        </WatchVideoMainPlayerLayer>
-      </WatchVideoMainPlayer>
+            <Stage
+              width={bounds.width}
+              height={bounds.height}
+            >
+              <Layer>
+                {/**
+                 * fontSize = 表示高さ / 15
+                 * y = 表示高さ / 11 * 0 + 10
+                 * くらいが丁度良い
+                 */}
+                {comments.map((comment, i) => (
+                  <CommentText
+                    key={comment.id}
+                    text={comment.text}
+                    x={bounds.width}
+                    y={bounds.height / 11 * (comment.lane) + 10}
+                    fontSize={bounds.height / 15}
+                    fontStyle="700"
+                    isPlaying={isPlaying}
+                    line={comment.line}
+                    visible={commentDisp}
+                  />
+                ))}
+              </Layer>
+            </Stage>
+          </WatchVideoMainPlayerLayer>
+          {/**
+           * ビデオレンダラ
+           */}
+          <WatchVideoMainPlayerLayer
+            zIndex={1}
+          >
+            <YoutubePlayer {...ytPlayerProps} hidden={!playerInstance} />
+          </WatchVideoMainPlayerLayer>
+        </WatchVideoMainPlayer>
+      </FullScreen>
       {/**
        * 何かに使うかもしれない枠
        * 絵師の画像一覧 or コメント投稿欄

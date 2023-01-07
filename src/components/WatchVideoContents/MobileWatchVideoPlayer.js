@@ -5,12 +5,13 @@ import styled from "@emotion/styled";
 import useMeasure from "react-use-measure";
 import Konva from "konva";
 import { Layer, Stage, Text } from "react-konva";
+import { useLocation } from "react-router-dom";
+import { FullScreen } from "react-full-screen";
 
 import { YoutubePlayer } from "../YoutubePlayer/YoutubePlayer";
 import { useYoutubePlayer } from "../../hooks/useYoutubePlayer";
 import { useStreamComments } from "../../hooks/useStreamComments";
 import { usePlayingVideo } from "../../hooks/usePlayingVideo";
-import { useLocation } from "react-router-dom";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPlayerContainer = styled(Box)(({ theme }) => ({
@@ -44,6 +45,9 @@ const CommentText = (props) => {
       node: commentRef.current,
       x: -commentRef.current.textWidth,
       duration: DURATION_SECONDS,
+      onFinish: () => {
+        if (commentRef.current) commentRef.current.destroy();
+      }
     });
   }, [commentRef]);
 
@@ -72,7 +76,7 @@ const CommentText = (props) => {
 /**
  * 動画の再生および流れるコメントの表示を行う
  */
-export const MobileWatchVideoPlayer = memo(({ sx, id, thread, commentDisp, handleCommentIndex }) => {
+export const MobileWatchVideoPlayer = memo(({ sx, id, thread, commentDisp, handleCommentIndex, handleFullscreen }) => {
   // Youtubeプレイヤーロード
   const { playerInstance, ...ytPlayerProps } = useYoutubePlayer({
     mountId: 'youtubeplayer',
@@ -181,52 +185,56 @@ export const MobileWatchVideoPlayer = memo(({ sx, id, thread, commentDisp, handl
       {/**
        * プレイヤー部分
        */}
-      <WatchVideoMainPlayer>
-        {/**
-         * コメントレンダラ
-         */}
-        <WatchVideoMainPlayerLayer
-          zIndex={2}
-          ref={ref}
-          sx={{
-            pointerEvents: "none"
-          }}
-        >
-          <Stage
-            width={bounds.width}
-            height={bounds.height}
+      <FullScreen
+        handle={handleFullscreen}
+      >
+        <WatchVideoMainPlayer>
+          {/**
+           * コメントレンダラ
+           */}
+          <WatchVideoMainPlayerLayer
+            zIndex={2}
+            ref={ref}
+            sx={{
+              pointerEvents: "none"
+            }}
           >
-            <Layer>
-              {/**
-               * fontSize = 表示高さ / 15
-               * y = 表示高さ / 11 * 0 + 10
-               * くらいが丁度良い
-               */}
-              {comments.map((comment, i) => (
-                <CommentText
-                  key={comment.id}
-                  text={comment.text}
-                  x={bounds.width}
-                  y={bounds.height / 11 * (comment.lane) + 10}
-                  fontSize={bounds.height / 15}
-                  fontStyle="700"
-                  isPlaying={isPlaying}
-                  line={comment.line}
-                  visible={commentDisp}
-                />
-              ))}
-            </Layer>
-          </Stage>
-        </WatchVideoMainPlayerLayer>
-        {/**
-         * ビデオレンダラ
-         */}
-        <WatchVideoMainPlayerLayer
-          zIndex={1}
-        >
-          <YoutubePlayer {...ytPlayerProps} hidden={!playerInstance} />
-        </WatchVideoMainPlayerLayer>
-      </WatchVideoMainPlayer>
+            <Stage
+              width={bounds.width}
+              height={bounds.height}
+            >
+              <Layer>
+                {/**
+                 * fontSize = 表示高さ / 15
+                 * y = 表示高さ / 11 * 0 + 10
+                 * くらいが丁度良い
+                 */}
+                {comments.map((comment, i) => (
+                  <CommentText
+                    key={comment.id}
+                    text={comment.text}
+                    x={bounds.width}
+                    y={bounds.height / 11 * (comment.lane) + 10}
+                    fontSize={bounds.height / 15}
+                    fontStyle="700"
+                    isPlaying={isPlaying}
+                    line={comment.line}
+                    visible={commentDisp}
+                  />
+                ))}
+              </Layer>
+            </Stage>
+          </WatchVideoMainPlayerLayer>
+          {/**
+           * ビデオレンダラ
+           */}
+          <WatchVideoMainPlayerLayer
+            zIndex={1}
+          >
+            <YoutubePlayer {...ytPlayerProps} hidden={!playerInstance} />
+          </WatchVideoMainPlayerLayer>
+        </WatchVideoMainPlayer>
+      </FullScreen>
     </WatchVideoMainPlayerContainer>
   )
 });

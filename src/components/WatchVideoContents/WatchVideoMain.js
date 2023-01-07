@@ -2,6 +2,7 @@ import { memo, useMemo, useState } from "react";
 
 import styled from "@emotion/styled";
 import { Box } from "@mui/material";
+import { useFullScreenHandle } from "react-full-screen";
 
 import { WatchVideoNavigation } from "./WatchVideoNavigation";
 import { WatchVideoPlayer } from "./WatchVideoPlayer";
@@ -54,16 +55,18 @@ export const WatchVideoMain = memo(({ sx, id }) => {
     setCommentIndex(index);
   };
 
+  const handleFullscreen = useFullScreenHandle();
+
   return (
     <WatchVideoMainContainer {...sx}>
       {/**
        * プレイヤー & メディア表示
        */}
-      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} handleCommentIndex={handleCommentIndex} />
+      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} />
       {/**
        * ナビゲーションパネル
        */}
-      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} commentIndex={commentIndex} timeStamp={timeStamp} />
+      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} />
     </WatchVideoMainContainer>
   )
 });
