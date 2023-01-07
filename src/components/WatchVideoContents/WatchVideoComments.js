@@ -16,6 +16,7 @@ import { useLocalStorage } from "../../hooks/useLocalStrage";
 import { isMobile } from "react-device-detect";
 import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
+import { Fullscreen } from "@mui/icons-material";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPanelMenuContainer = styled(Box)(({ theme }) => ({
@@ -102,13 +103,18 @@ const CommentTypeSelect = styled("select")(({ theme }) => ({
   border: "2px solid",
   borderColor: theme.palette.control.dark
 }));
+
+const CommentIconButton = styled(IconButton)(({ theme }) => ({
+  height: 30,
+  width: 30
+}));
 //#endregion
 
 /**
  * コメントパネル表示部
  * WatchVideoNavigationが長大になってきたので分けた
  */
-export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, commentIndex }) => {
+export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, commentIndex, handleFullscreen }) => {
   // Josh認証確認
   const [isJosh] = useLocalStorage('josh', 'false');
 
@@ -188,32 +194,38 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
         <WatchVideoMainPanelMenuContents
           textAlign="right"
         >
-          <IconButton
+          <CommentIconButton
             disableRipple
             onClick={handleAutoScroll}
           >
-            {autoScroll ? <DownloadIcon /> : <FileDownloadOffIcon />}
-          </IconButton>
-          <IconButton
+            {autoScroll ? <DownloadIcon fontSize="small" /> : <FileDownloadOffIcon fontSize="small" />}
+          </CommentIconButton>
+          <CommentIconButton
             disableRipple
             onClick={handleChangeCommentDisp}
           >
-            {commentDisp ? <InsertCommentIcon /> : <CommentsDisabledIcon />}
-          </IconButton>
+            {commentDisp ? <InsertCommentIcon fontSize="small" /> : <CommentsDisabledIcon fontSize="small" />}
+          </CommentIconButton>
+          <CommentIconButton
+            disableRipple
+            onClick={handleFullscreen.enter}
+          >
+            <Fullscreen fontSize="small" />
+          </CommentIconButton>
           {isJosh === "true" && (
             <>
-              <IconButton
+              <CommentIconButton
                 disableRipple
                 onClick={handleRegistOpen}
               >
-                <AppRegistrationIcon />
-              </IconButton>
-              <IconButton
+                <AppRegistrationIcon fontSize="small" />
+              </CommentIconButton>
+              <CommentIconButton
                 disableRipple
                 onClick={handleReportOpen}
               >
-                <FlagIcon />
-              </IconButton>
+                <FlagIcon fontSize="small" />
+              </CommentIconButton>
               <RegistThreadDialog
                  open={openRegistDialog}
                  onClose={handleRegistClose}

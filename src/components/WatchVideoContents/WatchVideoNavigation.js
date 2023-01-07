@@ -58,7 +58,7 @@ function a11yProps(index) {
 /**
  * 動画横のコメント表示/プレイリスト動画表示を行う
  */
-export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, commentIndex, timeStamp }) => {
+export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, commentIndex, timeStamp, handleFullscreen }) => {
   // 選択されているタブを管理
   const [tabId, setTabId] = useState(0);
   const handleTabIdChange = (event, newTabId) => {
@@ -95,6 +95,7 @@ export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleC
             commentDisp={commentDisp}
             handleChangeCommentDisp={handleChangeCommentDisp}
             commentIndex={commentIndex}
+            handleFullscreen={handleFullscreen}
           />
         </TabPanel>
         <TabPanel  value={tabId} index={1}>
