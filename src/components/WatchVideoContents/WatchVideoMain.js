@@ -48,6 +48,12 @@ export const WatchVideoMain = memo(({ sx, id }) => {
   const handleChangeCommentDisp = () => {
     setCommentDisp(!commentDisp);
   };
+  // コメントグラフ表示ボタン
+  // デフォルトは非表示にしておく
+  const [graphDisp, setGraphDisp] = useState(false);
+  const handleChangeGraphDisp = () => {
+    setGraphDisp(!graphDisp);
+  };
 
   // 流れたコメントのインデックスを管理しコメントリストを動作させる
   const [commentIndex, setCommentIndex] = useState(0);
@@ -62,11 +68,11 @@ export const WatchVideoMain = memo(({ sx, id }) => {
       {/**
        * プレイヤー & メディア表示
        */}
-      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} />
+      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} graphDisp={graphDisp} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} />
       {/**
        * ナビゲーションパネル
        */}
-      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} />
+      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} graphDisp={graphDisp} handleChangeGraphDisp={handleChangeGraphDisp} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} />
     </WatchVideoMainContainer>
   )
 });
