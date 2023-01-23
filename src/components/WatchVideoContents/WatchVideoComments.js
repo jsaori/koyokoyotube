@@ -16,7 +16,7 @@ import { useLocalStorage } from "../../hooks/useLocalStrage";
 import { isMobile } from "react-device-detect";
 import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
-import { Fullscreen } from "@mui/icons-material";
+import { Fullscreen, ShowChart } from "@mui/icons-material";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPanelMenuContainer = styled(Box)(({ theme }) => ({
@@ -114,7 +114,7 @@ const CommentIconButton = styled(IconButton)(({ theme }) => ({
  * コメントパネル表示部
  * WatchVideoNavigationが長大になってきたので分けた
  */
-export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, commentIndex, handleFullscreen }) => {
+export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen }) => {
   // Josh認証確認
   const [isJosh] = useLocalStorage('josh', 'false');
 
@@ -205,6 +205,12 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
             onClick={handleChangeCommentDisp}
           >
             {commentDisp ? <InsertCommentIcon fontSize="small" /> : <CommentsDisabledIcon fontSize="small" />}
+          </CommentIconButton>
+          <CommentIconButton
+            disableRipple
+            onClick={handleChangeGraphDisp}
+          >
+            {graphDisp ? <ShowChart fontSize="small" /> : <ShowChart fontSize="small" opacity="0.5" />}
           </CommentIconButton>
           <CommentIconButton
             disableRipple
