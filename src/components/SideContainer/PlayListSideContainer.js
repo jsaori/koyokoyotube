@@ -25,12 +25,17 @@ export const PlayListSideContainer = memo(({ sx, playlistData }) => {
       <List disablePadding>
         <PlayListSideContainerItem text="再生リスト一覧" selected={listId === 0} />
         {playlistData.map((playlist, index) => (
-          <PlayListSideContainerIconItem
-            key={index}
-            text={playlist.title}
-            listId={playlist.id}
-            selected={listId === playlist.id}
-          />
+          <>
+            {playlist.videos.length > 0 &&
+              <PlayListSideContainerIconItem
+                key={index}
+                text={playlist.title}
+                listId={playlist.id}
+                selected={listId === playlist.id}
+              />
+            }
+          </>
+
         ))}
       </List>
     </Box>
