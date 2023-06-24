@@ -11,7 +11,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { useGetRealtimeDB, useUpdateRealtimeDB } from "../../hooks/useRealtimeDB";
-import { getVideoTitle } from "../../libs/initYoutube";
+import { getVideoTitle, getChannelId } from "../../libs/initYoutube";
 
 //#region ユーザー定義スタイルコンポーネント
 const JBox = styled(Box)((theme) => ({
@@ -146,6 +146,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
 
     json.threads = [...registeredData.threads, ...data.threads];
     json.update = true;
+    json.channelId = channelId;
     updateThreadData(`/thread/${youtubeId}`, json);
     // 送信後フォームのリセットを行う
     reset({
@@ -210,6 +211,16 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
       setTitle(res);
     };
     getTitle();
+  }, [youtubeId]);
+
+  // Youtube動画に紐付くチャンネルID取得
+  const [channelId, setChannelId] = useState("");
+  useEffect(() => {
+    const getChannelIdFunc = async() => {
+      const res = await getChannelId(youtubeId);
+      setChannelId(res);
+    };
+    getChannelIdFunc();
   }, [youtubeId]);
 
   return (

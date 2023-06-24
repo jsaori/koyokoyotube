@@ -14,6 +14,16 @@ export const getVideoTitle = async (videoId) => {
 }
 
 /**
+ * Youtube動画のチャンネルIDを取得
+ */
+export const getChannelId = async (videoId) => {
+  if (!videoId) return "";
+  const req = `${YOUTUBE_API_URL}videos?part=snippet&id=${videoId}&key=${process.env.REACT_APP_FIREBASE_APIKEY}`;
+  const res = await axios.get(req);
+  return res.data.items[0].snippet.channelId;
+}
+
+/**
  * Youtube動画からコメントスレッドを取得
  */
 export const getVideoCommentThreads = async (videoId) => {
