@@ -86,7 +86,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
             .required("実況スレ URL は必須です")
             .url("URLが不正です")
             .max(STRING_MAX, "URLが不正です")
-            .matches(/((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10})))($|\/)/, { message: "URLが不正です"})
+            .matches(/((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/, { message: "URLが不正です"})
             .test("duplicated-threads", "実況スレURLが重複しています", validateDuplicatedThreads)
         }),
       )
