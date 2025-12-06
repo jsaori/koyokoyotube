@@ -4,6 +4,8 @@ import styled from "@emotion/styled";
 import { Backdrop, Box, Button, Checkbox, CircularProgress, FormControlLabel, IconButton, Snackbar, Stack, TextField } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
 import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import { Controller, useFieldArray, useForm } from "react-hook-form";
@@ -51,8 +53,16 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   // ※直接アクセスして確認することは可能. 5chはGone判定が厳しいので却下
   // ※実況スレURLが重複することのデメリットはDBに無駄な要素が増える点のみ
   const validateDuplicatedThreads = (thread) => {
+    // 編集されたスレッドを取得（削除されていないもの）
+    const editedThreads = Array.from(editedThreadsMap.entries())
+      .filter(([index]) => !deletedThreadIndices.has(index))
+      .map(([_, t]) => t.url);
+    // 編集されていない、かつ削除されていない登録済みスレッドを取得
+    const uneditedRegisteredThreads = registeredData.threads
+      .filter((_, index) => !editedThreadsMap.has(index) && !deletedThreadIndices.has(index))
+      .map(t => t.url);
     // スラッシュを全て抜いた文字列で比較を行う
-    const data = [...registeredData.threads, ...watchThreads.filter(v => v.url.replace(/\//g, '') !== thread.replace(/\//g, ''))];
+    const data = [...uneditedRegisteredThreads, ...editedThreads, ...watchThreads.filter(v => v.url.replace(/\//g, '') !== thread.replace(/\//g, ''))];
     return (!data.find((v => v.url.replace(/\//g, '') === thread.replace(/\//g, '')))
             && watchThreads.filter(v => v.url.replace(/\//g, '') !== thread.replace(/\//g, '')).length + 1 === watchThreads.length);
   }
@@ -134,18 +144,63 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   const watchYoutubeURL = watch("youtubeurl");
   const watchThreads = watch("threads");
 
+  // 編集状態管理
+  const [editableThreadIndices, setEditableThreadIndices] = useState(new Set());
+  const [editedThreadsMap, setEditedThreadsMap] = useState(new Map());
+  // 削除状態管理
+  const [deletedThreadIndices, setDeletedThreadIndices] = useState(new Set());
+
   // フォーム送信処理
   const [sending, updateThreadData] = useUpdateRealtimeDB();
   const [openSnack, setOpenSnack] = useState(false);
   const onSubmit = (data) => {
+    // 編集されたスレッドのバリデーション
+    const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
+    for (const [index, thread] of editedThreadsMap.entries()) {
+      const url = thread.url;
+      if (!url || !threadPattern.test(url)) {
+        // バリデーションエラーがある場合は送信を阻止
+        setOpenSnack(true);
+        // エラーメッセージを表示するためにSnackbarを更新（後で改善可能）
+        return;
+      }
+    }
+
     const json = {};
     json.simul = data.simul ?? false;
     json.simulDatetime = data.simul ? data.simuldatetime : "";
 
-    json.threads = [...registeredData.threads, ...data.threads];
-    json.update = true;
+    // 削除されていない、かつ編集されていないスレッド（そのまま保持）
+    const uneditedThreads = registeredData.threads.filter((_, index) => 
+      !deletedThreadIndices.has(index) && !editedThreadsMap.has(index)
+    );
+
+    // 編集されたスレッド（削除されていないもの、URLのみ更新）
+    const editedThreads = Array.from(editedThreadsMap.entries())
+      .filter(([index]) => !deletedThreadIndices.has(index))
+      .map(([index, thread]) => {
+        const originalThread = registeredData.threads[index];
+        return {
+          url: thread.url,
+          // cacheフラグは既存の値を保持（koyokoyoactionsで使われないため考慮不要）
+          ...(originalThread.cache !== undefined && { cache: originalThread.cache })
+        };
+      });
+
+    // 新規追加スレッド
+    const newThreads = data.threads;
+
+    json.threads = [...uneditedThreads, ...editedThreads, ...newThreads];
+    
+    // 削除・編集または新規追加がある場合のみupdate: trueに設定
+    const hasChanges = deletedThreadIndices.size > 0 || editedThreads.length > 0 || newThreads.length > 0;
+    if (hasChanges) {
+      json.update = true;
+    }
+    
     json.channelId = channelId;
     updateThreadData(`/thread/${youtubeId}`, json);
+    
     // 送信後フォームのリセットを行う
     reset({
       youtubeurl: defaultYoutubeURL,
@@ -153,11 +208,74 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
       threads: [blankThread]
     });
 
+    // 編集状態もリセット
+    setEditableThreadIndices(new Set());
+    setEditedThreadsMap(new Map());
+    setDeletedThreadIndices(new Set());
+
     setOpenSnack(true);
   };
 
   const handleCloseSnack = () => {
     setOpenSnack(false);
+  };
+
+  // 編集モードの切り替え
+  const handleToggleEdit = (index) => {
+    setEditableThreadIndices(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+        // 編集モードを解除する際、変更がなければeditedThreadsMapからも削除
+        setEditedThreadsMap(prevMap => {
+          const newMap = new Map(prevMap);
+          newMap.delete(index);
+          return newMap;
+        });
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
+  };
+
+  // 編集されたスレッドのURLを更新
+  const handleEditedThreadChange = (index, newUrl) => {
+    setEditedThreadsMap(prev => {
+      const newMap = new Map(prev);
+      const originalThread = registeredData.threads[index];
+      if (newUrl !== originalThread.url) {
+        newMap.set(index, { url: newUrl });
+      } else {
+        newMap.delete(index);
+      }
+      return newMap;
+    });
+  };
+
+  // 削除モードの切り替え
+  const handleToggleDelete = (index) => {
+    setDeletedThreadIndices(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+        // 削除時は編集モードも解除
+        setEditableThreadIndices(prevEdit => {
+          const newEditSet = new Set(prevEdit);
+          newEditSet.delete(index);
+          return newEditSet;
+        });
+        // 編集状態もクリア
+        setEditedThreadsMap(prevMap => {
+          const newMap = new Map(prevMap);
+          newMap.delete(index);
+          return newMap;
+        });
+      }
+      return newSet;
+    });
   };
 
   // Youtube URLからIDを抽出
@@ -199,6 +317,10 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
       setValue("simul", registeredData.simul);
       setValue("simuldatetime", registeredData.simulDatetime);
     }
+    // registeredDataが変更されたら編集状態をリセット
+    setEditableThreadIndices(new Set());
+    setEditedThreadsMap(new Map());
+    setDeletedThreadIndices(new Set());
   }, [registeredData, setValue]);
 
   // Youtube動画タイトル取得
@@ -290,27 +412,119 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
         </SimulCheckBox>
       </Stack>
       <Stack spacing={1} sx={{ mt: 2 }}>
-        {registeredData.threads.map((thread, index) => (
-          <TextArea
-            key={`registered-${thread.url}`}
-          >
-            <IconButton
-              disabled
+        {registeredData.threads.map((thread, index) => {
+          const isEditable = editableThreadIndices.has(index);
+          const isDeleted = deletedThreadIndices.has(index);
+          const editedThread = editedThreadsMap.get(index);
+          const displayUrl = editedThread ? editedThread.url : thread.url;
+          return (
+            <TextArea
+              key={`registered-${thread.url}-${index}`}
             >
-              <LockIcon />
-            </IconButton>
-            <FlexTextForm
-              label={`[登録済み]実況スレ URL${index + 1}`}
-              variant="standard"
-              value={thread.url}
-              type="url"
-              disabled
-              InputProps={{
-                readOnly: true,
-              }}
-            />
-          </TextArea>
-        ))}
+              <IconButton
+                onClick={() => handleToggleEdit(index)}
+                disabled={isDeleted}
+              >
+                {isEditable ? <LockOpenIcon /> : <LockIcon />}
+              </IconButton>
+              <FlexTextForm
+                label={`[登録済み]実況スレ URL${index + 1}`}
+                variant="standard"
+                value={displayUrl}
+                type="url"
+                disabled={!isEditable || isDeleted}
+                InputProps={{
+                  readOnly: !isEditable || isDeleted,
+                }}
+                sx={{
+                  ...(isDeleted && {
+                    textDecoration: 'line-through',
+                    opacity: 0.5,
+                  }),
+                }}
+                onChange={(e) => {
+                  if (isEditable && !isDeleted) {
+                    handleEditedThreadChange(index, e.target.value);
+                  }
+                }}
+                error={isEditable && editedThread && (() => {
+                  // バリデーション: URL形式チェック
+                  const urlPattern = /^https?:\/\/.+/;
+                  if (!urlPattern.test(displayUrl) && displayUrl !== "") {
+                    return true;
+                  }
+                  // 実況スレURL形式チェック
+                  const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
+                  if (displayUrl !== "" && !threadPattern.test(displayUrl)) {
+                    return true;
+                  }
+                  // 重複チェック
+                  const normalizedUrl = displayUrl.replace(/\//g, '');
+                  // 他の編集されたスレッドと重複チェック
+                  for (const [otherIndex, otherThread] of editedThreadsMap.entries()) {
+                    if (otherIndex !== index && otherThread.url.replace(/\//g, '') === normalizedUrl) {
+                      return true;
+                    }
+                  }
+                  // 未編集の登録済みスレッドと重複チェック（削除されていないもの）
+                  for (let i = 0; i < registeredData.threads.length; i++) {
+                    if (i !== index && !editedThreadsMap.has(i) && !deletedThreadIndices.has(i)) {
+                      if (registeredData.threads[i].url.replace(/\//g, '') === normalizedUrl) {
+                        return true;
+                      }
+                    }
+                  }
+                  // 新規スレッドと重複チェック
+                  for (const newThread of watchThreads) {
+                    if (newThread.url.replace(/\//g, '') === normalizedUrl) {
+                      return true;
+                    }
+                  }
+                  return false;
+                })()}
+                helperText={isEditable && editedThread && (() => {
+                  const urlPattern = /^https?:\/\/.+/;
+                  if (!urlPattern.test(displayUrl) && displayUrl !== "") {
+                    return "URLが不正です";
+                  }
+                  const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
+                  if (displayUrl !== "" && !threadPattern.test(displayUrl)) {
+                    return "URLが不正です";
+                  }
+                  // 重複チェック
+                  const normalizedUrl = displayUrl.replace(/\//g, '');
+                  // 他の編集されたスレッドと重複チェック
+                  for (const [otherIndex, otherThread] of editedThreadsMap.entries()) {
+                    if (otherIndex !== index && otherThread.url.replace(/\//g, '') === normalizedUrl) {
+                      return "実況スレURLが重複しています";
+                    }
+                  }
+                  // 未編集の登録済みスレッドと重複チェック（削除されていないもの）
+                  for (let i = 0; i < registeredData.threads.length; i++) {
+                    if (i !== index && !editedThreadsMap.has(i) && !deletedThreadIndices.has(i)) {
+                      if (registeredData.threads[i].url.replace(/\//g, '') === normalizedUrl) {
+                        return "実況スレURLが重複しています";
+                      }
+                    }
+                  }
+                  // 新規スレッドと重複チェック
+                  for (const newThread of watchThreads) {
+                    if (newThread.url.replace(/\//g, '') === normalizedUrl) {
+                      return "実況スレURLが重複しています";
+                    }
+                  }
+                  return "";
+                })()}
+              />
+              <IconButton
+                onClick={() => handleToggleDelete(index)}
+                color={isDeleted ? "error" : "default"}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </TextArea>
+          );
+        })}
         {fields.map((field, index) => {
           return (
             <React.Fragment key={field.id}>
