@@ -4,7 +4,7 @@ import styled from "@emotion/styled";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 import { format } from "date-fns";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Tooltip } from "@mui/material";
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import CommentsDisabledIcon from '@mui/icons-material/CommentsDisabled';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -192,44 +192,78 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
         <WatchVideoMainPanelMenuContents
           textAlign="right"
         >
-          <CommentIconButton
-            disableRipple
-            onClick={handleAutoScroll}
-          >
-            {autoScroll ? <DownloadIcon fontSize="small" /> : <FileDownloadOffIcon fontSize="small" />}
-          </CommentIconButton>
-          <CommentIconButton
-            disableRipple
-            onClick={handleChangeCommentDisp}
-          >
-            {commentDisp ? <InsertCommentIcon fontSize="small" /> : <CommentsDisabledIcon fontSize="small" />}
-          </CommentIconButton>
-          {handleChangeGraphDisp && (
+          <Tooltip title={autoScroll ? "自動スクロール: ON" : "自動スクロール: OFF"} arrow placement="top">
             <CommentIconButton
               disableRipple
-              onClick={handleChangeGraphDisp}
+              onClick={handleAutoScroll}
             >
-              {graphDisp ? <ShowChart fontSize="small" /> : <ShowChart fontSize="small" opacity="0.5" />}
+              {autoScroll ? <DownloadIcon fontSize="small" /> : <FileDownloadOffIcon fontSize="small" />}
             </CommentIconButton>
+          </Tooltip>
+          <Tooltip title={commentDisp ? "コメント表示: ON" : "コメント表示: OFF"} arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleChangeCommentDisp}
+            >
+              {commentDisp ? <InsertCommentIcon fontSize="small" /> : <CommentsDisabledIcon fontSize="small" />}
+            </CommentIconButton>
+          </Tooltip>
+          {handleChangeGraphDisp && (
+            <Tooltip title={graphDisp ? "コメントグラフ表示: ON" : "コメントグラフ表示: OFF"} arrow placement="top">
+              <CommentIconButton
+                disableRipple
+                onClick={handleChangeGraphDisp}
+              >
+                <Box
+                  sx={{
+                    position: "relative",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    pointerEvents: "none",
+                    "&::after": graphDisp ? {} : {
+                      content: '""',
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      width: "120%",
+                      height: "2px",
+                      backgroundColor: "currentColor",
+                      transform: "translate(-50%, -50%) rotate(45deg)",
+                      transformOrigin: "center",
+                      pointerEvents: "none",
+                    }
+                  }}
+                >
+                  <ShowChart fontSize="small" sx={{ opacity: graphDisp ? 1 : 0.5 }} />
+                </Box>
+              </CommentIconButton>
+            </Tooltip>
           )}
-          <CommentIconButton
-            disableRipple
-            onClick={handleFullscreen.enter}
-          >
-            <Fullscreen fontSize="small" />
-          </CommentIconButton>
-          <CommentIconButton
-            disableRipple
-            onClick={handleRegistOpen}
-          >
-            <AppRegistrationIcon fontSize="small" />
-          </CommentIconButton>
-          <CommentIconButton
-            disableRipple
-            onClick={handleReportOpen}
-          >
-            <FlagIcon fontSize="small" />
-          </CommentIconButton>
+          <Tooltip title="フルスクリーン表示" arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleFullscreen.enter}
+            >
+              <Fullscreen fontSize="small" />
+            </CommentIconButton>
+          </Tooltip>
+          <Tooltip title="実況スレを登録" arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleRegistOpen}
+            >
+              <AppRegistrationIcon fontSize="small" />
+            </CommentIconButton>
+          </Tooltip>
+          <Tooltip title="動画を報告" arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleReportOpen}
+            >
+              <FlagIcon fontSize="small" />
+            </CommentIconButton>
+          </Tooltip>
           <RegistThreadDialog
              open={openRegistDialog}
              onClose={handleRegistClose}
@@ -286,4 +320,19 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
       </WatchVideoCommentMain>
     </>
   )
+}, (prevProps, nextProps) => {
+  // graphDispとhandleChangeGraphDispの変更を確実に検知する
+  const shouldSkipRender = (
+    prevProps.sx === nextProps.sx &&
+    prevProps.id === nextProps.id &&
+    prevProps.thread === nextProps.thread &&
+    prevProps.commentDisp === nextProps.commentDisp &&
+    prevProps.handleChangeCommentDisp === nextProps.handleChangeCommentDisp &&
+    prevProps.graphDisp === nextProps.graphDisp &&
+    prevProps.handleChangeGraphDisp === nextProps.handleChangeGraphDisp &&
+    prevProps.commentIndex === nextProps.commentIndex &&
+    prevProps.handleFullscreen === nextProps.handleFullscreen
+  );
+  
+  return shouldSkipRender;
 });

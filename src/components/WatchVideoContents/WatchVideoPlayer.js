@@ -362,4 +362,17 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
       )}
     </WatchVideoMainPlayerContainer>
   )
+}, (prevProps, nextProps) => {
+  // graphDispの変更を確実に検知する
+  const shouldSkipRender = (
+    prevProps.sx === nextProps.sx &&
+    prevProps.id === nextProps.id &&
+    prevProps.thread === nextProps.thread &&
+    prevProps.commentDisp === nextProps.commentDisp &&
+    prevProps.graphDisp === nextProps.graphDisp &&
+    prevProps.handleCommentIndex === nextProps.handleCommentIndex &&
+    prevProps.handleFullscreen === nextProps.handleFullscreen
+  );
+  
+  return shouldSkipRender;
 });
