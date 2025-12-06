@@ -112,7 +112,7 @@ const CommentIconButton = styled(IconButton)(({ theme }) => ({
  * コメントパネル表示部
  * WatchVideoNavigationが長大になってきたので分けた
  */
-export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen, commentColor, commentAlpha, commentSizeScale, setCommentColor, setCommentAlpha, setCommentSizeScale }) => {
+export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen, commentColor, commentAlpha, commentSizeScale, setCommentColor, setCommentAlpha, setCommentSizeScale, commentTimeOffset, setCommentTimeOffset }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -269,6 +269,8 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
             handleChangeCommentDisp={handleChangeCommentDisp}
             graphDisp={graphDisp}
             handleChangeGraphDisp={handleChangeGraphDisp}
+            commentTimeOffset={commentTimeOffset}
+            setCommentTimeOffset={setCommentTimeOffset}
           />
         </WatchVideoMainPanelMenuContents>
       </WatchVideoMainPanelMenuContainer>
@@ -333,7 +335,9 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
     prevProps.commentSizeScale === nextProps.commentSizeScale &&
     prevProps.setCommentColor === nextProps.setCommentColor &&
     prevProps.setCommentAlpha === nextProps.setCommentAlpha &&
-    prevProps.setCommentSizeScale === nextProps.setCommentSizeScale
+    prevProps.setCommentSizeScale === nextProps.setCommentSizeScale &&
+    prevProps.commentTimeOffset === nextProps.commentTimeOffset &&
+    prevProps.setCommentTimeOffset === nextProps.setCommentTimeOffset
   );
   
   return shouldSkipRender;

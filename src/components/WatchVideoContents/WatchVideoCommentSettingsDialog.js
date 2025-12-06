@@ -7,7 +7,7 @@ import { SketchPicker } from 'react-color';
  * コメント表示設定ダイアログ
  */
 export const WatchVideoCommentSettingsDialog = memo((props) => {
-  const { onClose, open, commentColor, commentAlpha, commentSizeScale, setCommentColor, setCommentAlpha, setCommentSizeScale, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp } = props;
+  const { onClose, open, commentColor, commentAlpha, commentSizeScale, setCommentColor, setCommentAlpha, setCommentSizeScale, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentTimeOffset, setCommentTimeOffset } = props;
 
   const [colorPickerAnchor, setColorPickerAnchor] = useState(null);
 
@@ -17,6 +17,10 @@ export const WatchVideoCommentSettingsDialog = memo((props) => {
 
   const handleSizeScaleChange = (event, newValue) => {
     setCommentSizeScale(newValue);
+  };
+
+  const handleTimeOffsetChange = (event, newValue) => {
+    setCommentTimeOffset(newValue);
   };
 
   const handleColorPickerOpen = (event) => {
@@ -141,6 +145,21 @@ export const WatchVideoCommentSettingsDialog = memo((props) => {
             step={0.1}
             valueLabelDisplay="auto"
             valueLabelFormat={(value) => `${value.toFixed(1)}x`}
+            sx={{ mt: 2 }}
+          />
+        </Box>
+        <Box sx={{ mt: 4, mb: 2 }}>
+          <Typography gutterBottom>
+            コメントタイミング調整: {commentTimeOffset === 0 ? '0秒' : commentTimeOffset > 0 ? `+${commentTimeOffset.toFixed(1)}秒` : `${commentTimeOffset.toFixed(1)}秒`}
+          </Typography>
+          <Slider
+            value={commentTimeOffset}
+            onChange={handleTimeOffsetChange}
+            min={-30}
+            max={30}
+            step={0.5}
+            valueLabelDisplay="auto"
+            valueLabelFormat={(value) => value === 0 ? '0秒' : value > 0 ? `+${value.toFixed(1)}秒` : `${value.toFixed(1)}秒`}
             sx={{ mt: 2 }}
           />
         </Box>

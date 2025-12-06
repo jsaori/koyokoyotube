@@ -75,6 +75,9 @@ export const WatchVideoMain = memo(({ sx, id }) => {
   const [commentAlpha, setCommentAlpha] = useLocalStorage('commentAlpha', 1.0);
   const [commentSizeScale, setCommentSizeScale] = useLocalStorage('commentSizeScale', 1.0);
 
+  // コメント時間調整（一時的な設定、保存不要）
+  const [commentTimeOffset, setCommentTimeOffset] = useState(0);
+
   const handleFullscreen = useFullScreenHandle();
 
   return (
@@ -82,11 +85,11 @@ export const WatchVideoMain = memo(({ sx, id }) => {
       {/**
        * プレイヤー & メディア表示
        */}
-      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} commentColor={commentColor} commentAlpha={commentAlpha} commentSizeScale={commentSizeScale} />
+      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} commentColor={commentColor} commentAlpha={commentAlpha} commentSizeScale={commentSizeScale} commentTimeOffset={commentTimeOffset} />
       {/**
        * ナビゲーションパネル
        */}
-      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleChangeGraphDisp={!isMobile ? handleChangeGraphDisp : undefined} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} commentColor={commentColor} commentAlpha={commentAlpha} commentSizeScale={commentSizeScale} setCommentColor={setCommentColor} setCommentAlpha={setCommentAlpha} setCommentSizeScale={setCommentSizeScale} />
+      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleChangeGraphDisp={!isMobile ? handleChangeGraphDisp : undefined} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} commentColor={commentColor} commentAlpha={commentAlpha} commentSizeScale={commentSizeScale} setCommentColor={setCommentColor} setCommentAlpha={setCommentAlpha} setCommentSizeScale={setCommentSizeScale} commentTimeOffset={commentTimeOffset} setCommentTimeOffset={setCommentTimeOffset} />
     </WatchVideoMainContainer>
   )
 });

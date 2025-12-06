@@ -146,7 +146,7 @@ const CommentText = ({ isMobile, ...props }) => {
 /**
  * 動画の再生および流れるコメントの表示を行う（レスポンシブ対応）
  */
-export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, handleCommentIndex, handleFullscreen, commentColor = '#ffffff', commentAlpha = 1.0, commentSizeScale = 1.0 }) => {
+export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, handleCommentIndex, handleFullscreen, commentColor = '#ffffff', commentAlpha = 1.0, commentSizeScale = 1.0, commentTimeOffset = 0 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -251,13 +251,20 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     resetStreamComments();
   }, [id, resetStreamComments]);
 
+  // 時間調整オフセット変更時にコメントをリセットして同期
+  useEffect(() => {
+    resetStreamComments();
+  }, [commentTimeOffset, resetStreamComments]);
+
   // コメント生成処理
   useEffect(() => {
-    // 再生時間から流すべきコメントを生成
-    setStreamComments(currentMS);
+    // 再生時間から流すべきコメントを生成（時間調整オフセットを適用）
+    // commentTimeOffsetは秒単位なので、ミリ秒に変換して加算
+    const adjustedMS = currentMS + (commentTimeOffset * 1000);
+    setStreamComments(adjustedMS);
     // 現在の最新のコメントNoを設定
     handleCommentIndex(commentNo);
-  }, [currentMS, commentNo, handleCommentIndex, setStreamComments]);
+  }, [currentMS, commentNo, handleCommentIndex, setStreamComments, commentTimeOffset]);
 
   // React-Konvaによるcanvas描画はpixel指定しかできないため可変ウィンドウ対応が必要
   // useMeasureのrefを親要素に指定することでboundsに親のwidth/heightがpixelで入る
@@ -408,7 +415,8 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     prevProps.handleFullscreen === nextProps.handleFullscreen &&
     prevProps.commentColor === nextProps.commentColor &&
     prevProps.commentAlpha === nextProps.commentAlpha &&
-    prevProps.commentSizeScale === nextProps.commentSizeScale
+    prevProps.commentSizeScale === nextProps.commentSizeScale &&
+    prevProps.commentTimeOffset === nextProps.commentTimeOffset
   );
   
   return shouldSkipRender;
