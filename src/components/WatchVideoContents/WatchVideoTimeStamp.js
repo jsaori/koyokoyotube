@@ -41,6 +41,14 @@ const WatchVideoTimeStampDisplay = styled(Box)(({ theme }) => ({
   },
 }));
 
+const StyledTimeStampMenuContainer = styled(WatchVideoMainPanelMenuContainer)(({ theme }) => ({
+  height: "auto",
+  minHeight: 40,
+  marginTop: "4px",
+  paddingTop: "8px",
+  paddingBottom: "8px",
+}));
+
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
   [theme.breakpoints.up('md')]: {
     width: 200,
@@ -220,7 +228,7 @@ export const WatchVideoTimeStamp = memo(({ sx, timeStamp }) => {
       {/**
        * タイムスタンプパネル
        */}
-      <WatchVideoMainPanelMenuContainer>
+      <StyledTimeStampMenuContainer>
         <WatchVideoMainPanelMenuContents
           textAlign="left"
         >
@@ -241,7 +249,7 @@ export const WatchVideoTimeStamp = memo(({ sx, timeStamp }) => {
             </Select>
           </StyledFormControl>
         </WatchVideoMainPanelMenuContents>
-      </WatchVideoMainPanelMenuContainer>
+      </StyledTimeStampMenuContainer>
       {/**
        * タイムスタンプ欄
        */}
