@@ -177,14 +177,14 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
       >
         <WatchVideoCommentBase
           sx={{
-            width: isMobile ? "calc(100% - 120px)" : 370,
+            width: isMobile ? "calc(100% - 178px)" : 370,
           }}
         >
           {thread.data.comments[index].body}
         </WatchVideoCommentBase>
         <WatchVideoCommentBase
           sx={{
-            width: 120,
+            width: isMobile ? 178 : 120,
           }}
         >
           {format(thread.data.comments[index].posMs - (60*60*9 * 1000), "HH:mm:ss")}
@@ -225,12 +225,14 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
           >
             {commentDisp ? <InsertCommentIcon fontSize="small" /> : <CommentsDisabledIcon fontSize="small" />}
           </CommentIconButton>
-          <CommentIconButton
-            disableRipple
-            onClick={handleChangeGraphDisp}
-          >
-            {graphDisp ? <ShowChart fontSize="small" /> : <ShowChart fontSize="small" opacity="0.5" />}
-          </CommentIconButton>
+          {handleChangeGraphDisp && (
+            <CommentIconButton
+              disableRipple
+              onClick={handleChangeGraphDisp}
+            >
+              {graphDisp ? <ShowChart fontSize="small" /> : <ShowChart fontSize="small" opacity="0.5" />}
+            </CommentIconButton>
+          )}
           <CommentIconButton
             disableRipple
             onClick={handleFullscreen.enter}
@@ -275,14 +277,14 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
         <WatchVideoCommentHeader>
           <WatchVideoCommentHeaderContents
             sx={{
-              width: isMobile ? "calc(100% - 120px)" : 304,
+              width: isMobile ? "calc(100% - 178px)" : 304,
             }}
           >
             コメント
           </WatchVideoCommentHeaderContents>
           <WatchVideoCommentHeaderContents
             sx={{
-              width: 120,
+              width: isMobile ? 178 : 120,
             }}
           >
             再生時間
