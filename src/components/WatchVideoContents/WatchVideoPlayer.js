@@ -5,7 +5,7 @@ import styled from "@emotion/styled";
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import useMeasure from "react-use-measure";
 import Konva from "konva";
-import { Layer, Stage, Text } from "react-konva";
+import { Layer, Stage, Text, Group } from "react-konva";
 import { useLocation } from "react-router-dom";
 import { FullScreen } from "react-full-screen";
 import { AreaChart, Area, XAxis, ResponsiveContainer } from 'recharts';
@@ -76,45 +76,77 @@ const WatchVideoMediaBox = styled(Box)(({ theme }) => ({
 // コメントコンポーネント
 const DURATION_SECONDS = 5;
 const CommentText = ({ isMobile, ...props }) => {
-  const commentRef = useRef(null);
+  const groupRef = useRef(null);
   const tweenRef = useRef(null);
+  const strokeWidth = isMobile ? 0.5 : 1;
+  
   useEffect(() => {
     tweenRef.current = new Konva.Tween({
-      node: commentRef.current,
-      x: -commentRef.current.textWidth,
+      node: groupRef.current,
+      x: -groupRef.current.findOne('Text').textWidth,
       duration: DURATION_SECONDS,
       onFinish: () => {
-        if (commentRef.current) commentRef.current.destroy();
+        if (groupRef.current) groupRef.current.destroy();
       }
     });
-  }, [commentRef]);
+  }, [groupRef]);
 
   useEffect(() => {
     if (tweenRef === null) return;
     props.isPlaying ? tweenRef.current.play() : tweenRef.current.pause();
   }, [props.isPlaying, tweenRef]);
 
+  // アウトライン効果のためのオフセット（8方向）
+  const outlineOffsets = [
+    { x: -strokeWidth, y: -strokeWidth },
+    { x: 0, y: -strokeWidth },
+    { x: strokeWidth, y: -strokeWidth },
+    { x: -strokeWidth, y: 0 },
+    { x: strokeWidth, y: 0 },
+    { x: -strokeWidth, y: strokeWidth },
+    { x: 0, y: strokeWidth },
+    { x: strokeWidth, y: strokeWidth }
+  ];
+
   return (
-    <Text
-      ref={commentRef}
-      text={props.text}
+    <Group
+      ref={groupRef}
       x={props.x}
       y={props.y}
-      fontSize={props.fontSize}
-      fontStyle={props.fontStyle}
-      fill="white"
-      stroke="black"
-      strokeWidth={isMobile ? 0.5 : 1}
-      lineHeight={props.line === 1 ? 1 : 1.35}
       visible={props.visible}
-    />
+      opacity={props.opacity}
+    >
+      {/* アウトライン用の黒いテキスト（8方向に描画） */}
+      {outlineOffsets.map((offset, index) => (
+        <Text
+          key={`outline-${index}`}
+          text={props.text}
+          x={offset.x}
+          y={offset.y}
+          fontSize={props.fontSize}
+          fontStyle={props.fontStyle}
+          fill="black"
+          lineHeight={props.line === 1 ? 1 : 1.35}
+        />
+      ))}
+      {/* メインのテキスト */}
+      <Text
+        text={props.text}
+        x={0}
+        y={0}
+        fontSize={props.fontSize}
+        fontStyle={props.fontStyle}
+        fill={props.fill}
+        lineHeight={props.line === 1 ? 1 : 1.35}
+      />
+    </Group>
   )
 }
 
 /**
  * 動画の再生および流れるコメントの表示を行う（レスポンシブ対応）
  */
-export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, handleCommentIndex, handleFullscreen }) => {
+export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, handleCommentIndex, handleFullscreen, commentColor = '#ffffff', commentAlpha = 1.0, commentSizeScale = 1.0 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -307,12 +339,14 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
                     text={comment.text}
                     x={bounds.width}
                     y={bounds.height / 11 * (comment.lane) + 10}
-                    fontSize={bounds.height / 15}
+                    fontSize={bounds.height / 15 * commentSizeScale}
                     fontStyle="700"
                     isPlaying={isPlaying}
                     line={comment.line}
                     visible={commentDisp}
                     isMobile={isMobile}
+                    fill={commentColor}
+                    opacity={commentAlpha}
                   />
                 ))}
               </Layer>
@@ -363,7 +397,7 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     </WatchVideoMainPlayerContainer>
   )
 }, (prevProps, nextProps) => {
-  // graphDispの変更を確実に検知する
+  // graphDisp、commentAlpha、commentSizeScaleの変更を確実に検知する
   const shouldSkipRender = (
     prevProps.sx === nextProps.sx &&
     prevProps.id === nextProps.id &&
@@ -371,7 +405,10 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     prevProps.commentDisp === nextProps.commentDisp &&
     prevProps.graphDisp === nextProps.graphDisp &&
     prevProps.handleCommentIndex === nextProps.handleCommentIndex &&
-    prevProps.handleFullscreen === nextProps.handleFullscreen
+    prevProps.handleFullscreen === nextProps.handleFullscreen &&
+    prevProps.commentColor === nextProps.commentColor &&
+    prevProps.commentAlpha === nextProps.commentAlpha &&
+    prevProps.commentSizeScale === nextProps.commentSizeScale
   );
   
   return shouldSkipRender;

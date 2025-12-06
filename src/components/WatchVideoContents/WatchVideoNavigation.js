@@ -70,7 +70,7 @@ function a11yProps(index) {
 /**
  * 動画横のコメント表示/プレイリスト動画表示を行う（レスポンシブ対応）
  */
-export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, timeStamp, handleFullscreen }) => {
+export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, timeStamp, handleFullscreen, commentColor, commentAlpha, commentSizeScale, setCommentColor, setCommentAlpha, setCommentSizeScale }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -113,6 +113,12 @@ export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleC
             handleChangeGraphDisp={!isMobile ? handleChangeGraphDisp : undefined}
             commentIndex={commentIndex}
             handleFullscreen={handleFullscreen}
+            commentColor={commentColor}
+            commentAlpha={commentAlpha}
+            commentSizeScale={commentSizeScale}
+            setCommentColor={setCommentColor}
+            setCommentAlpha={setCommentAlpha}
+            setCommentSizeScale={setCommentSizeScale}
           />
         </TabPanel>
         <TabPanel  value={tabId} index={1}>

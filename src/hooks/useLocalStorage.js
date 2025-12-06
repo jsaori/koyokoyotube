@@ -35,9 +35,12 @@ export const useLocalStorage = (key, initialValue) => {
   const set = useCallback(
     (newValue) => {
       try {
-        const valueToStore = JSON.stringify(newValue);
-        localStorage.setItem(key, valueToStore);
-        setState(newValue);
+        setState((prevState) => {
+          // 関数型更新をサポート
+          const valueToStore = typeof newValue === 'function' ? newValue(prevState) : newValue;
+          localStorage.setItem(key, JSON.stringify(valueToStore));
+          return valueToStore;
+        });
       } catch (error) {
         console.error(`Error setting localStorage key "${key}":`, error);
       }

@@ -8,6 +8,7 @@ import { WatchVideoNavigation } from "./WatchVideoNavigation";
 import { WatchVideoPlayer } from "./WatchVideoPlayer";
 import { useFireStorage } from "../../hooks/useFireStorage";
 import { getTimeStamp } from "../../libs/initYoutube";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainContainer = styled(Box)(({ theme }) => ({
@@ -52,22 +53,27 @@ export const WatchVideoMain = memo(({ sx, id }) => {
 
   // ナビゲーションパネルにコメント非表示ボタンを設置する
   // それにともないナビゲーションパネルにおける変更をここで検知しプレイヤーにわたす必要がある
-  const [commentDisp, setCommentDisp] = useState(true);
+  const [commentDisp, setCommentDisp] = useLocalStorage('commentDisp', true);
   const handleChangeCommentDisp = useCallback(() => {
     setCommentDisp(prev => !prev);
-  }, []);
+  }, [setCommentDisp]);
   // コメントグラフ表示ボタン（デスクトップのみ）
   // デフォルトは非表示にしておく
-  const [graphDisp, setGraphDisp] = useState(false);
+  const [graphDisp, setGraphDisp] = useLocalStorage('graphDisp', false);
   const handleChangeGraphDisp = useCallback(() => {
     setGraphDisp(prev => !prev);
-  }, []);
+  }, [setGraphDisp]);
 
   // 流れたコメントのインデックスを管理しコメントリストを動作させる
   const [commentIndex, setCommentIndex] = useState(0);
   const handleCommentIndex = useCallback((index) => {
     setCommentIndex(index);
   }, []);
+
+  // コメント表示設定（色、透明度、サイズ倍率）
+  const [commentColor, setCommentColor] = useLocalStorage('commentColor', '#ffffff');
+  const [commentAlpha, setCommentAlpha] = useLocalStorage('commentAlpha', 1.0);
+  const [commentSizeScale, setCommentSizeScale] = useLocalStorage('commentSizeScale', 1.0);
 
   const handleFullscreen = useFullScreenHandle();
 
@@ -76,11 +82,11 @@ export const WatchVideoMain = memo(({ sx, id }) => {
       {/**
        * プレイヤー & メディア表示
        */}
-      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} />
+      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} commentColor={commentColor} commentAlpha={commentAlpha} commentSizeScale={commentSizeScale} />
       {/**
        * ナビゲーションパネル
        */}
-      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleChangeGraphDisp={!isMobile ? handleChangeGraphDisp : undefined} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} />
+      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleChangeGraphDisp={!isMobile ? handleChangeGraphDisp : undefined} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} commentColor={commentColor} commentAlpha={commentAlpha} commentSizeScale={commentSizeScale} setCommentColor={setCommentColor} setCommentAlpha={setCommentAlpha} setCommentSizeScale={setCommentSizeScale} />
     </WatchVideoMainContainer>
   )
 });

@@ -5,17 +5,17 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 import { format } from "date-fns";
 import { Box, IconButton, Tooltip } from "@mui/material";
-import InsertCommentIcon from '@mui/icons-material/InsertComment';
-import CommentsDisabledIcon from '@mui/icons-material/CommentsDisabled';
 import DownloadIcon from '@mui/icons-material/Download';
 import FileDownloadOffIcon from '@mui/icons-material/FileDownloadOff';
 import FlagIcon from '@mui/icons-material/Flag';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 import { useMediaQuery, useTheme } from "@mui/material";
 import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
-import { Fullscreen, ShowChart } from "@mui/icons-material";
+import { WatchVideoCommentSettingsDialog } from "./WatchVideoCommentSettingsDialog";
+import { Fullscreen } from "@mui/icons-material";
 import { WatchVideoMainPanelMenuContainer, WatchVideoMainPanelMenuContents } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
@@ -112,7 +112,7 @@ const CommentIconButton = styled(IconButton)(({ theme }) => ({
  * コメントパネル表示部
  * WatchVideoNavigationが長大になってきたので分けた
  */
-export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen }) => {
+export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen, commentColor, commentAlpha, commentSizeScale, setCommentColor, setCommentAlpha, setCommentSizeScale }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -146,6 +146,15 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
   };
   const handleReportClose = () => {
     setOpenReportDialog(false);
+  };
+
+  // コメント設定ダイアログの表示
+  const [openSettingsDialog, setOpenSettingsDialog] = useState(false);
+  const handleSettingsOpen = () => {
+    setOpenSettingsDialog(true);
+  };
+  const handleSettingsClose = () => {
+    setOpenSettingsDialog(false);
   };
 
   const renderRow = ({index, style}) => {
@@ -205,46 +214,14 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
               {autoScroll ? <DownloadIcon fontSize="small" /> : <FileDownloadOffIcon fontSize="small" />}
             </CommentIconButton>
           </Tooltip>
-          <Tooltip title={commentDisp ? "コメント表示: ON" : "コメント表示: OFF"} arrow placement="top">
+          <Tooltip title="コメント表示設定" arrow placement="top">
             <CommentIconButton
               disableRipple
-              onClick={handleChangeCommentDisp}
+              onClick={handleSettingsOpen}
             >
-              {commentDisp ? <InsertCommentIcon fontSize="small" /> : <CommentsDisabledIcon fontSize="small" />}
+              <SettingsIcon fontSize="small" />
             </CommentIconButton>
           </Tooltip>
-          {handleChangeGraphDisp && (
-            <Tooltip title={graphDisp ? "コメントグラフ表示: ON" : "コメントグラフ表示: OFF"} arrow placement="top">
-              <CommentIconButton
-                disableRipple
-                onClick={handleChangeGraphDisp}
-              >
-                <Box
-                  sx={{
-                    position: "relative",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    pointerEvents: "none",
-                    "&::after": graphDisp ? {} : {
-                      content: '""',
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      width: "120%",
-                      height: "2px",
-                      backgroundColor: "currentColor",
-                      transform: "translate(-50%, -50%) rotate(45deg)",
-                      transformOrigin: "center",
-                      pointerEvents: "none",
-                    }
-                  }}
-                >
-                  <ShowChart fontSize="small" sx={{ opacity: graphDisp ? 1 : 0.5 }} />
-                </Box>
-              </CommentIconButton>
-            </Tooltip>
-          )}
           <Tooltip title="フルスクリーン表示" arrow placement="top">
             <CommentIconButton
               disableRipple
@@ -278,6 +255,20 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
             open={openReportDialog}
             onClose={handleReportClose}
             youtubeid={id}
+          />
+          <WatchVideoCommentSettingsDialog
+            open={openSettingsDialog}
+            onClose={handleSettingsClose}
+            commentColor={commentColor}
+            commentAlpha={commentAlpha}
+            commentSizeScale={commentSizeScale}
+            setCommentColor={setCommentColor}
+            setCommentAlpha={setCommentAlpha}
+            setCommentSizeScale={setCommentSizeScale}
+            commentDisp={commentDisp}
+            handleChangeCommentDisp={handleChangeCommentDisp}
+            graphDisp={graphDisp}
+            handleChangeGraphDisp={handleChangeGraphDisp}
           />
         </WatchVideoMainPanelMenuContents>
       </WatchVideoMainPanelMenuContainer>
@@ -326,7 +317,7 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
     </>
   )
 }, (prevProps, nextProps) => {
-  // graphDispとhandleChangeGraphDispの変更を確実に検知する
+  // graphDisp、handleChangeGraphDisp、設定値の変更を確実に検知する
   const shouldSkipRender = (
     prevProps.sx === nextProps.sx &&
     prevProps.id === nextProps.id &&
@@ -336,7 +327,13 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
     prevProps.graphDisp === nextProps.graphDisp &&
     prevProps.handleChangeGraphDisp === nextProps.handleChangeGraphDisp &&
     prevProps.commentIndex === nextProps.commentIndex &&
-    prevProps.handleFullscreen === nextProps.handleFullscreen
+    prevProps.handleFullscreen === nextProps.handleFullscreen &&
+    prevProps.commentColor === nextProps.commentColor &&
+    prevProps.commentAlpha === nextProps.commentAlpha &&
+    prevProps.commentSizeScale === nextProps.commentSizeScale &&
+    prevProps.setCommentColor === nextProps.setCommentColor &&
+    prevProps.setCommentAlpha === nextProps.setCommentAlpha &&
+    prevProps.setCommentSizeScale === nextProps.setCommentSizeScale
   );
   
   return shouldSkipRender;
