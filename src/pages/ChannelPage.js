@@ -6,15 +6,23 @@ import { Box, Tab, Tabs } from "@mui/material";
 
 import PlayListPage from "./PlayListPage";
 import VideoPage from "./VideoPage";
-import { useLocalStorage } from "../hooks/useLocalStrage";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import JPage from "./JPage";
 
 //#region ユーザー定義スタイルコンポーネント
-const ChannelMainBox = styled(Box)({
-  maxWidth: 1280,
-  minWidth: 1280,
-  margin: '0 auto'
-});
+const ChannelMainBox = styled(Box)(({ theme }) => ({
+  margin: '0 auto',
+  [theme.breakpoints.up('md')]: {
+    maxWidth: 1280,
+    minWidth: 1280,
+  },
+  [theme.breakpoints.down('md')]: {
+    maxWidth: '100%',
+    width: '100%',
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
+}));
 
 const ChannelPageContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -64,7 +72,7 @@ const TabPageKey = {
 };
 
 /**
- * プレイリストページ
+ * チャンネルページ（レスポンシブ対応）
  */
 export default function ChannelPage({ subpage }) {
   // ルーティング用関数

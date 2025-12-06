@@ -1,7 +1,7 @@
 import { useCallback, useState, useRef, useEffect } from 'react';
 
 /**
- * ブラウザ(Web Strage)にjson形式でデータを保存するHOOK
+ * ブラウザ(Web Storage)にjson形式でデータを保存するHOOK
  * あまり推奨されないらしい
  * JOSH認証とライト/ダークモードの保存に使用
  */

@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { Box } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 import styled from "@emotion/styled";
 import useMeasure from "react-use-measure";
 import Konva from "konva";
@@ -16,11 +16,16 @@ import { usePlayingVideo } from "../../hooks/usePlayingVideo";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoMainPlayerContainer = styled(Box)(({ theme }) => ({
-  width: "calc(100% - 384px)",
-  minWidth: 640,
   backgroundColor: "black",
   display: "flex",
-  flexDirection: "column"
+  flexDirection: "column",
+  [theme.breakpoints.up('md')]: {
+    width: "calc(100% - 384px)",
+    minWidth: 640,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: "100%",
+  },
 }));
 
 const WatchVideoMainPlayer = styled(Box)(({ theme }) => ({
@@ -51,7 +56,7 @@ const WatchVideoMediaBox = styled(Box)(({ theme }) => ({
 
 // コメントコンポーネント
 const DURATION_SECONDS = 5;
-const CommentText = (props) => {
+const CommentText = ({ isMobile, ...props }) => {
   const commentRef = useRef(null);
   const tweenRef = useRef(null);
   useEffect(() => {
@@ -80,7 +85,7 @@ const CommentText = (props) => {
       fontStyle={props.fontStyle}
       fill="white"
       stroke="black"
-      strokeWidth={1}
+      strokeWidth={isMobile ? 0.5 : 1}
       lineHeight={props.line === 1 ? 1 : 1.35}
       visible={props.visible}
     />
@@ -88,9 +93,12 @@ const CommentText = (props) => {
 }
 
 /**
- * 動画の再生および流れるコメントの表示を行う
+ * 動画の再生および流れるコメントの表示を行う（レスポンシブ対応）
  */
 export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, handleCommentIndex, handleFullscreen }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   // Youtubeプレイヤーロード
   const { playerInstance, ...ytPlayerProps } = useYoutubePlayer({
     mountId: 'youtubeplayer',
@@ -114,7 +122,7 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
   const navigateNextVideoRef = useRef();
   navigateNextVideoRef.current = navigateNextVideo;
 
-  // コメント数グラフの計算のため動画の再生時間を取得
+  // コメント数グラフの計算のため動画の再生時間を取得（デスクトップのみ）
   const [videoLength, setVideoLength] = useState(0);
 
   // Youtubeプレイヤー状態変化コールバック
@@ -127,7 +135,10 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     } else if (event.data === window.YT.PlayerState.PLAYING) {
       // 再生中
       setPlaying(true);
-      setVideoLength(event.target.getDuration());
+      // コメントグラフ用に動画の再生時間を取得（デスクトップのみ）
+      if (!isMobile && graphDisp) {
+        setVideoLength(event.target.getDuration());
+      }
     } else if (event.data === window.YT.PlayerState.PAUSED) {
       // 停止
       setPlaying(false);
@@ -138,7 +149,7 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     } else {
       // 未開始
     }
-  }, []);
+  }, [isMobile, graphDisp]);
 
   // Youtubeプレイヤーイベントリスナー
   useEffect(() => {
@@ -198,11 +209,11 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
   // useMeasureのrefを親要素に指定することでboundsに親のwidth/heightがpixelで入る
   const [ref, bounds] = useMeasure();
 
-  // コメントされた時間をインターバルで区切ってコメント数を算出する
+  // コメントされた時間をインターバルで区切ってコメント数を算出する（デスクトップのみ、コメントグラフ表示時のみ）
   const SEEK_BAR_MARGIN = 12;
   const [commentsCount, setCommentsCount] = useState([]);
   useEffect(() => {
-    if (thread && bounds && videoLength > 0) {
+    if (!isMobile && graphDisp && thread && bounds && videoLength > 0) {
       // 動画再生時間を超えたコメントは切り捨てる
       const filteredComments = thread.data.comments.filter(c => c.posMs / 1000 <= videoLength);
 
@@ -223,8 +234,10 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
         }
       });
       setCommentsCount(commentsCount);
+    } else {
+      setCommentsCount([]);
     }
-  }, [thread, bounds, videoLength]);
+  }, [thread, bounds, videoLength, isMobile, graphDisp]);
 
   return (
     <WatchVideoMainPlayerContainer>
@@ -266,6 +279,7 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
                     isPlaying={isPlaying}
                     line={comment.line}
                     visible={commentDisp}
+                    isMobile={isMobile}
                   />
                 ))}
               </Layer>
@@ -278,9 +292,9 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
           }}
           >
           {/**
-           * コメント数グラフ
+           * コメント数グラフ（デスクトップのみ）
            */}
-          { graphDisp &&
+          {!isMobile && graphDisp &&
             <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   width={bounds.width - SEEK_BAR_MARGIN * 2}
@@ -304,13 +318,15 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
         </WatchVideoMainPlayer>
       </FullScreen>
       {/**
-       * 何かに使うかもしれない枠
+       * 何かに使うかもしれない枠（デスクトップのみ）
        * 絵師の画像一覧 or コメント投稿欄
        *
        */}
-      <WatchVideoMediaBox>
+      {!isMobile && (
+        <WatchVideoMediaBox>
 
-      </WatchVideoMediaBox>
+        </WatchVideoMediaBox>
+      )}
     </WatchVideoMainPlayerContainer>
   )
 });

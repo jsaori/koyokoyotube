@@ -1,20 +1,26 @@
 import styled from "@emotion/styled";
-import { Box } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 
 import { VideoList } from "../components/VideoList/VideoList";
 import { VideoListSideContainer } from "../components/SideContainer/VideoListSideContainer";
 import { useFireStorage } from "../hooks/useFireStorage";
 import { CHANNEL_ID_LIST } from "../libs/constants";
 
-const VideoBox = styled(Box)({
+const VideoBox = styled(Box)(({ theme }) => ({
   display: "flex",
-  width: "100%"
-});
+  width: "100%",
+  [theme.breakpoints.down('md')]: {
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
+}));
 
 /**
  * チャンネルページ内の動画一覧タブページ
  */
  export default function VideoPage({ chname }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const videos = useFireStorage(`data/video/${CHANNEL_ID_LIST[chname]}/videos.gz`, null);
 
   return (
@@ -31,8 +37,8 @@ const VideoBox = styled(Box)({
         />
       ) : (
         <>
-          <VideoListSideContainer sx={{mr: 4, width: 216}} />
-          <VideoList sx={{ width: 716 }} videoData={videos.data.videos} />
+          {!isMobile && <VideoListSideContainer sx={{mr: 4, width: 216}} />}
+          <VideoList sx={{ width: isMobile ? "100%" : 716 }} videoData={videos.data.videos} />
         </>
       )}
     </VideoBox>

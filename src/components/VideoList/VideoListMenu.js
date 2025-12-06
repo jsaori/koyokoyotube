@@ -2,21 +2,25 @@ import { memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import styled from "@emotion/styled";
-import { Box, Pagination, Typography } from "@mui/material";
+import { Box, Pagination, Typography, useMediaQuery, useTheme } from "@mui/material";
 import queryString from "query-string";
-import { isMobile } from "react-device-detect";
 
 import { SearchBar } from "../SearchBar/SearchBar";
 
 //#region ユーザー定義スタイルコンポーネント
 const VideoListSelect = styled("select")(({ theme }) => ({
   height: 32,
-  width: 194,
   fontSize: 13,
   color: theme.palette.control.contrastText,
   backgroundColor: theme.palette.control.light,
   border: "2px solid",
-  borderColor: theme.palette.control.dark
+  borderColor: theme.palette.control.dark,
+  [theme.breakpoints.up('md')]: {
+    width: 194,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: "100%",
+  },
 }));
 
 const VideoListMenuMain = styled(Box)(({ theme }) => ({
@@ -26,18 +30,30 @@ const VideoListMenuMain = styled(Box)(({ theme }) => ({
 const VideoListMenuContainer = styled(Box)(({ theme }) => ({
   marginTop: 16,
   display: "flex",
-  flexDirection: !isMobile ? "row" : "column",
+  [theme.breakpoints.up('md')]: {
+    flexDirection: "row",
+  },
+  [theme.breakpoints.down('md')]: {
+    flexDirection: "column",
+  },
   justifyContent: "space-between"
 }));
 
 const VideoListPagenation = styled(Box)(({ theme }) => ({
   display: "flex",
   justifyContent: "flex-end",
-  paddingTop: !isMobile ? 0 : 10
+  [theme.breakpoints.up('md')]: {
+    paddingTop: 0,
+  },
+  [theme.breakpoints.down('md')]: {
+    paddingTop: 10,
+  },
 }));
 //#endregion
 
 export const VideoListMenu = memo(({ sx, videoCount, page, sort }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
 

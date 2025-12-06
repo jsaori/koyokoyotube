@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 
 import styled from "@emotion/styled";
-import { Box, Tab, Tabs } from "@mui/material";
+import { Box, Tab, Tabs, useMediaQuery, useTheme } from "@mui/material";
 import { WatchVideoComments } from "./WatchVideoComments";
 import { WatchVideoPlaylist } from "./WatchVideoPlaylist";
 import { WatchVideoTimeStamp } from "./WatchVideoTimeStamp";
@@ -10,18 +10,30 @@ import { WatchVideoTimeStamp } from "./WatchVideoTimeStamp";
 const WatchVideoMainPanelContainer = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.control.light,
   position: "relative",
-  minWidth: 384,
-  zIndex: 2
+  zIndex: 2,
+  [theme.breakpoints.up('md')]: {
+    minWidth: 384,
+  },
+  [theme.breakpoints.down('md')]: {
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
 }));
 
 const WatchVideoMainPanelBody = styled(Box)(({ theme }) => ({
-  bottom: 0,
   display: "flex",
   flexDirection: "column",
-  left: 0,
-  position: "absolute",
-  right: 0,
-  top: 48,
+  [theme.breakpoints.up('md')]: {
+    bottom: 0,
+    left: 0,
+    position: "absolute",
+    right: 0,
+    top: 48,
+  },
+  [theme.breakpoints.down('md')]: {
+    position: "relative",
+    minHeight: `calc(100vh - 500px)`,
+  },
 }));
 //#endregion
 
@@ -56,9 +68,12 @@ function a11yProps(index) {
 }
 
 /**
- * 動画横のコメント表示/プレイリスト動画表示を行う
+ * 動画横のコメント表示/プレイリスト動画表示を行う（レスポンシブ対応）
  */
 export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, timeStamp, handleFullscreen }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   // 選択されているタブを管理
   const [tabId, setTabId] = useState(0);
   const handleTabIdChange = (event, newTabId) => {
@@ -94,8 +109,8 @@ export const WatchVideoNavigation = memo(({ sx, id, thread, commentDisp, handleC
             thread={thread}
             commentDisp={commentDisp}
             handleChangeCommentDisp={handleChangeCommentDisp}
-            graphDisp={graphDisp}
-            handleChangeGraphDisp={handleChangeGraphDisp}
+            graphDisp={!isMobile ? graphDisp : undefined}
+            handleChangeGraphDisp={!isMobile ? handleChangeGraphDisp : undefined}
             commentIndex={commentIndex}
             handleFullscreen={handleFullscreen}
           />

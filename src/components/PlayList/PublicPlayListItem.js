@@ -2,14 +2,18 @@ import { memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import styled from "@emotion/styled";
-import { Box, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { Box, ListItem, ListItemButton, ListItemText, useMediaQuery, useTheme } from "@mui/material";
 import { format } from "date-fns";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { isMobile } from "react-device-detect";
 
 //#region ユーザー定義スタイルコンポーネント
 const PublicPlayListListItem = styled(ListItem)(({ theme }) => ({
-  height: !isMobile ? 112 : 60,
+  [theme.breakpoints.up('md')]: {
+    height: 112,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: 60,
+  },
   '&:hover, &.Mui-selected:hover': {
     "& .MuiListItemButton-root": {
       backgroundColor: theme.palette.control.light,
@@ -22,17 +26,28 @@ const PublicPlayListListItem = styled(ListItem)(({ theme }) => ({
 }));
 
 const PublicPlayListListItemButton = styled(ListItemButton)(({ theme }) => ({
-  height: !isMobile ? 112 : 60,
+  [theme.breakpoints.up('md')]: {
+    height: 112,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: 60,
+  },
   backgroundColor: theme.palette.control.light,
   border: "1px solid",
   borderColor: theme.palette.control.dark,
 }));
 
-const PublicPlayListDiscription = styled(Box)({
+const PublicPlayListDiscription = styled(Box)(({ theme }) => ({
   flex: '1 0 1px',
-  minWidth: !isMobile ? 0 : window.screen.width,
-  height: !isMobile ? 78 : 50,
-});
+  [theme.breakpoints.up('md')]: {
+    minWidth: 0,
+    height: 78,
+  },
+  [theme.breakpoints.down('md')]: {
+    minWidth: '100%',
+    height: 50,
+  },
+}));
 
 const PublicPlayListMedia = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.control.main,
@@ -92,6 +107,9 @@ const PublicPlayListMediaText = styled(Box)({
 //#endregion
 
 export const PublicPlayListItem = memo(({ sx, playlistId, playlistTitle, updateAt, videoCount, videos }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   // ルーティング用
   const navigate = useNavigate();
   const location = useLocation();

@@ -12,8 +12,8 @@ import FileDownloadOffIcon from '@mui/icons-material/FileDownloadOff';
 import FlagIcon from '@mui/icons-material/Flag';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 
-import { useLocalStorage } from "../../hooks/useLocalStrage";
-import { isMobile } from "react-device-detect";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { useMediaQuery, useTheme } from "@mui/material";
 import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 import { Fullscreen, ShowChart } from "@mui/icons-material";
@@ -62,7 +62,12 @@ const WatchVideoCommentMain = styled(Box)(({ theme }) => ({
   bottom: 0,
   fontSize: 13,
   left: 0,
-  position: !isMobile ? "absolute" : "relative",
+  [theme.breakpoints.up('md')]: {
+    position: "absolute",
+  },
+  [theme.breakpoints.down('md')]: {
+    position: "relative",
+  },
   right: 0,
   top: 40,
   display: "flex",
@@ -73,8 +78,14 @@ const WatchVideoCommentMain = styled(Box)(({ theme }) => ({
 const WatchVideoCommentDisplay = styled(Box)(({ theme }) => ({
   overflowY: "hidden",
   overflowX: "hidden",
-  height: !isMobile ? "100%" : window.screen.height - 500,
-  width: 384,
+  [theme.breakpoints.up('md')]: {
+    height: "100%",
+    width: 384,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: `calc(100vh - 500px)`,
+    width: "100%",
+  },
 }));
 
 const WatchVideoCommentContainer = styled(Box)(({ theme }) => ({
@@ -96,12 +107,17 @@ const WatchVideoCommentBase = styled(Box)(({ theme }) => ({
 
 const CommentTypeSelect = styled("select")(({ theme }) => ({
   height: 24,
-  width: 126,
   fontSize: 13,
   color: theme.palette.control.contrastText,
   backgroundColor: theme.palette.control.light,
   border: "2px solid",
-  borderColor: theme.palette.control.dark
+  borderColor: theme.palette.control.dark,
+  [theme.breakpoints.up('md')]: {
+    width: 126,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: "100%",
+  },
 }));
 
 const CommentIconButton = styled(IconButton)(({ theme }) => ({
@@ -115,6 +131,9 @@ const CommentIconButton = styled(IconButton)(({ theme }) => ({
  * WatchVideoNavigationが長大になってきたので分けた
  */
 export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   // Josh認証確認
   const [isJosh] = useLocalStorage('josh', 'false');
 
@@ -158,14 +177,14 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
       >
         <WatchVideoCommentBase
           sx={{
-            width: 370,
+            width: isMobile ? "calc(100% - 120px)" : 370,
           }}
         >
           {thread.data.comments[index].body}
         </WatchVideoCommentBase>
         <WatchVideoCommentBase
           sx={{
-            width: !isMobile ? 120 : 178,
+            width: 120,
           }}
         >
           {format(thread.data.comments[index].posMs - (60*60*9 * 1000), "HH:mm:ss")}
@@ -256,7 +275,7 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
         <WatchVideoCommentHeader>
           <WatchVideoCommentHeaderContents
             sx={{
-              width: 304,
+              width: isMobile ? "calc(100% - 120px)" : 304,
             }}
           >
             コメント

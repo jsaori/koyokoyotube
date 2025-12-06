@@ -7,7 +7,6 @@ import { FixedSizeList } from "react-window";
 
 import { usePlayingVideo } from "../../hooks/usePlayingVideo";
 import { useTheme } from "@emotion/react";
-import { isMobile } from "react-device-detect";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoPlaylistMain = styled(Box)(({ theme }) => ({
@@ -17,7 +16,12 @@ const WatchVideoPlaylistMain = styled(Box)(({ theme }) => ({
   right: 0,
   top: 0,
   bottom: 0,
-  position: !isMobile ? "absolute" : "relative",
+  [theme.breakpoints.up('md')]: {
+    position: "absolute",
+  },
+  [theme.breakpoints.down('md')]: {
+    position: "relative",
+  },
   overflow: "hidden"
 }));
 
@@ -49,7 +53,12 @@ const WatchVideoPlaylistHeaderSubText = styled(Box)(({ theme }) => ({
 }));
 
 const WatchVideoPlaylistContainer = styled(Box)(({ theme }) => ({
-  height: !isMobile ? "100%" : window.screen.height - 440,
+  [theme.breakpoints.up('md')]: {
+    height: "100%",
+  },
+  [theme.breakpoints.down('md')]: {
+    height: `calc(100vh - 440px)`,
+  },
   width: "100%",
   overflow: "hidden",
   position: "relative",
@@ -64,7 +73,13 @@ const WatchVideoPlaylistButton = styled(ListItemButton)(({ theme }) => ({
 
 const WatchVideoPlaylistIcon = styled(Box)(({ theme }) => ({
   marginRight: 8,
-  width: 96
+  flexShrink: 0,
+  [theme.breakpoints.up('md')]: {
+    width: 96,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: 64,
+  },
 }));
 
 const WatchVideoPlaylistTitle = styled(Box)(({ theme }) => ({

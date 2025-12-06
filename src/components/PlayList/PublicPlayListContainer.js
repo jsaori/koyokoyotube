@@ -1,14 +1,16 @@
 import { memo } from "react";
 
-import { Box, List } from "@mui/material";
+import { Box, List, useMediaQuery, useTheme } from "@mui/material";
 
 import { PublicPlayListItem } from "./PublicPlayListItem";
-import { isMobile } from "react-device-detect";
 
 /**
  * 特定再生リストのコンテンツ一覧
  */
 export const PublicPlayListContainer = memo(({ sx, playlistData }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   return (
     <Box {...sx}>
       <List disablePadding>

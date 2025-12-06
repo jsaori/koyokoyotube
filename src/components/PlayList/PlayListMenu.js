@@ -18,12 +18,17 @@ const PlayListMenuSelection = styled(Box)(({ theme }) => ({
 
 const VideoListSelect = styled("select")(({ theme }) => ({
   height: 32,
-  width: 194,
   fontSize: 13,
   color: theme.palette.control.contrastText,
   backgroundColor: theme.palette.control.light,
   border: "2px solid",
-  borderColor: theme.palette.control.dark
+  borderColor: theme.palette.control.dark,
+  [theme.breakpoints.up('md')]: {
+    width: 194,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: "100%",
+  },
 }));
 //#endregion
 

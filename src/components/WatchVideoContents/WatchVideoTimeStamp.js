@@ -2,7 +2,6 @@ import React, { memo, useState } from "react";
 
 import styled from "@emotion/styled";
 import { Box } from "@mui/material";
-import { isMobile } from "react-device-detect";
 import parse, {domToReact} from "html-react-parser";
 import { Link, useLocation } from "react-router-dom";
 
@@ -32,7 +31,12 @@ const WatchVideoTimeStampMain = styled(Box)(({ theme }) => ({
   bottom: 0,
   fontSize: 13,
   left: 0,
-  position: !isMobile ? "absolute" : "relative",
+  [theme.breakpoints.up('md')]: {
+    position: "absolute",
+  },
+  [theme.breakpoints.down('md')]: {
+    position: "relative",
+  },
   right: 0,
   top: 40,
   display: "flex",
@@ -43,18 +47,29 @@ const WatchVideoTimeStampMain = styled(Box)(({ theme }) => ({
 const WatchVideoTimeStampDisplay = styled(Box)(({ theme }) => ({
   overflowY: "auto",
   overflowX: "hidden",
-  height: !isMobile ? "100%" : window.screen.height - 500,
-  width: 384,
+  [theme.breakpoints.up('md')]: {
+    height: "100%",
+    width: 384,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: `calc(100vh - 500px)`,
+    width: "100%",
+  },
 }));
 
 const TimeStampAuthSelect = styled("select")(({ theme }) => ({
   height: 24,
-  width: 200,
   fontSize: 14,
   color: theme.palette.control.contrastText,
   backgroundColor: theme.palette.control.light,
   border: "2px solid",
-  borderColor: theme.palette.control.dark
+  borderColor: theme.palette.control.dark,
+  [theme.breakpoints.up('md')]: {
+    width: 200,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: "100%",
+  },
 }));
 //#endregion
 

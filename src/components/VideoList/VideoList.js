@@ -1,16 +1,17 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import { Box, Divider, List } from "@mui/material";
+import { Box, Divider, List, useMediaQuery, useTheme } from "@mui/material";
 import { VideoListFooter } from "./VideoListFooter";
 import { VideoListItem } from "./VideoListItem";
 import { VideoListMenu } from "./VideoListMenu";
-import { isMobile } from "react-device-detect";
 
 /**
  * 動画一覧
  */
 export const VideoList = memo(({ sx, videoData }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
   const [page, setPage] = useState(0);
   const query = useMemo(() => {

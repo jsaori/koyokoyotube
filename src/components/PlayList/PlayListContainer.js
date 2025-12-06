@@ -1,17 +1,18 @@
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import { Box, Divider, List } from "@mui/material";
+import { Box, Divider, List, useMediaQuery, useTheme } from "@mui/material";
 
 import { VideoListItem } from "../VideoList/VideoListItem";
 import { PlayListHeader } from "./PlayListHeader";
 import { PlayListMenu } from "./PlayListMenu";
-import { isMobile } from "react-device-detect";
 
 /**
  * 特定再生リストのコンテンツ一覧
  */
 export const PlayListContainer = memo(({ sx, playlistData, listId }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
   const [sort, setSort] = useState("publishDesc");
   const query = useMemo(() => {

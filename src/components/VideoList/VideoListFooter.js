@@ -1,10 +1,9 @@
 import { memo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { Box, Pagination } from "@mui/material";
+import { Box, Pagination, useMediaQuery, useTheme } from "@mui/material";
 import queryString from "query-string";
 import styled from "@emotion/styled";
-import { isMobile } from "react-device-detect";
 
 //#region ユーザー定義スタイルコンポーネント
 const VideoListFooterMain = styled(Box)(({ theme }) => ({
@@ -15,6 +14,8 @@ const VideoListFooterMain = styled(Box)(({ theme }) => ({
 //#endregion
 
 export const VideoListFooter = memo(({ sx, videoCount, page }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
 

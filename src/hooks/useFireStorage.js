@@ -2,7 +2,7 @@ import { getBlob, ref } from "firebase/storage";
 import { useEffect, useState } from "react";
 
 import { firestorage } from "../libs/InitFirebase";
-import { useLocalStorage } from "./useLocalStrage";
+import { useLocalStorage } from "./useLocalStorage";
 
 /**
  * Firebase Storageのデータを管理するHOOK
