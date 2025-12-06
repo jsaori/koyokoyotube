@@ -12,6 +12,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 
 import { useGetRealtimeDB, useUpdateRealtimeDB } from "../../hooks/useRealtimeDB";
 import { getVideoTitle, getChannelId } from "../../libs/initYoutube";
+import { FormCommitButton } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
 const JBox = styled(Box)((theme) => ({
@@ -36,10 +37,7 @@ const TextArea = styled(Box)({
   alignItems: "flex-end",
 });
 
-const CommitButton = styled(Button)((theme) => ({
-  marginTop: 16,
-  width: 70
-}));
+const CommitButton = FormCommitButton;
 //#endregion
 
 /**

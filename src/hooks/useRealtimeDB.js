@@ -48,7 +48,7 @@ export function useRealtimeDBListener(
       if (!val) return;
       setData(val);
     })
-  }, [path, filterKey, filterValue, setData]);
+  }, [path, filterKey, filterValue]);
 
   return [data];
 }

@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import styled from "@emotion/styled";
 import { Box, useMediaQuery, useTheme } from "@mui/material";
@@ -42,7 +42,7 @@ export const WatchVideoMain = memo(({ sx, id }) => {
 
   // 動画idに紐づくタイムスタンプを取得
   const [timeStamp, setTimeStamp] = useState([]);
-  useMemo(() => {
+  useEffect(() => {
     const getStamp = async () => {
       const stamp = await getTimeStamp(id);
       setTimeStamp(stamp);
@@ -53,21 +53,21 @@ export const WatchVideoMain = memo(({ sx, id }) => {
   // ナビゲーションパネルにコメント非表示ボタンを設置する
   // それにともないナビゲーションパネルにおける変更をここで検知しプレイヤーにわたす必要がある
   const [commentDisp, setCommentDisp] = useState(true);
-  const handleChangeCommentDisp = () => {
-    setCommentDisp(!commentDisp);
-  };
+  const handleChangeCommentDisp = useCallback(() => {
+    setCommentDisp(prev => !prev);
+  }, []);
   // コメントグラフ表示ボタン（デスクトップのみ）
   // デフォルトは非表示にしておく
   const [graphDisp, setGraphDisp] = useState(false);
-  const handleChangeGraphDisp = () => {
-    setGraphDisp(!graphDisp);
-  };
+  const handleChangeGraphDisp = useCallback(() => {
+    setGraphDisp(prev => !prev);
+  }, []);
 
   // 流れたコメントのインデックスを管理しコメントリストを動作させる
   const [commentIndex, setCommentIndex] = useState(0);
-  const handleCommentIndex = (index) => {
+  const handleCommentIndex = useCallback((index) => {
     setCommentIndex(index);
-  };
+  }, []);
 
   const handleFullscreen = useFullScreenHandle();
 

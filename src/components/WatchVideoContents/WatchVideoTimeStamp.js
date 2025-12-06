@@ -6,26 +6,9 @@ import parse, {domToReact} from "html-react-parser";
 import { Link, useLocation } from "react-router-dom";
 
 import { TimeToSeconds } from "../../libs/utilities";
+import { WatchVideoMainPanelMenuContainer, WatchVideoMainPanelMenuContents } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
-const WatchVideoMainPanelMenuContainer = styled(Box)(({ theme }) => ({
-  borderBottom: "1px solid",
-  borderColor: theme.palette.paper.contrastBorder,
-  height: 40,
-  paddingLeft : 16,
-  paddingRight: 8,
-  display: "table",
-  position: "relative",
-  width: "100%"
-}));
-
-const WatchVideoMainPanelMenuContents = styled(Box)(({ theme }) => ({
-  verticalAlign: "middle",
-  boxSizing: "border-box",
-  display: "table-cell",
-  minWidth: 1,
-  position: "relative",
-}));
 
 const WatchVideoTimeStampMain = styled(Box)(({ theme }) => ({
   bottom: 0,

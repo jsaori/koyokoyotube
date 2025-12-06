@@ -17,26 +17,9 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 import { Fullscreen, ShowChart } from "@mui/icons-material";
+import { WatchVideoMainPanelMenuContainer, WatchVideoMainPanelMenuContents } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
-const WatchVideoMainPanelMenuContainer = styled(Box)(({ theme }) => ({
-  borderBottom: "1px solid",
-  borderColor: theme.palette.paper.contrastBorder,
-  height: 40,
-  paddingLeft : 16,
-  paddingRight: 8,
-  display: "table",
-  position: "relative",
-  width: "100%"
-}));
-
-const WatchVideoMainPanelMenuContents = styled(Box)(({ theme }) => ({
-  verticalAlign: "middle",
-  boxSizing: "border-box",
-  display: "table-cell",
-  minWidth: 1,
-  position: "relative",
-}));
 
 const WatchVideoCommentHeader = styled(Box)(({ theme }) => ({
   width: "100%",

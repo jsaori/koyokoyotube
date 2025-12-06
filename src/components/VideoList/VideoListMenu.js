@@ -6,22 +6,10 @@ import { Box, Pagination, Typography, useMediaQuery, useTheme } from "@mui/mater
 import queryString from "query-string";
 
 import { SearchBar } from "../SearchBar/SearchBar";
+import { ListSelect } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
-const VideoListSelect = styled("select")(({ theme }) => ({
-  height: 32,
-  fontSize: 13,
-  color: theme.palette.control.contrastText,
-  backgroundColor: theme.palette.control.light,
-  border: "2px solid",
-  borderColor: theme.palette.control.dark,
-  [theme.breakpoints.up('md')]: {
-    width: 194,
-  },
-  [theme.breakpoints.down('md')]: {
-    width: "100%",
-  },
-}));
+const VideoListSelect = ListSelect;
 
 const VideoListMenuMain = styled(Box)(({ theme }) => ({
   alignItems: "center"
