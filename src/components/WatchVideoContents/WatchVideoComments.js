@@ -160,7 +160,7 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
       >
         <WatchVideoCommentBase
           sx={{
-            width: isMobile ? "calc(100% - 178px)" : 370,
+            width: isMobile ? "calc(100% - 178px)" : 304,
           }}
         >
           {thread.data.comments[index].body}
