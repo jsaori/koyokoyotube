@@ -34,7 +34,7 @@ export const PlayListContainer = memo(({ sx, playlistData, listId }) => {
   const sortedVideos = useMemo(() => {
     if (!playlistData || !playlistData.videos) return [];
     return [...playlistData.videos].sort(sortChange).filter(v => v);
-  }, [playlistData?.videos, sortChange]);
+  }, [playlistData, sortChange]);
 
   if (!playlistData || !playlistData.videos) {
     return null;
