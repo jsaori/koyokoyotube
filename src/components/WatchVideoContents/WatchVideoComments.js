@@ -149,26 +149,31 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
   };
 
   const renderRow = ({index, style}) => {
+    const comment = thread.data.comments[index];
+    const tooltipTitle = `${comment.body} (${comment.postedAt}) [${comment.userThreadId}] [${comment.userBBSId}]`;
+    
     return (
-      <WatchVideoCommentContainer
-        key={index}
-        style={style}
-      >
-        <WatchVideoCommentBase
-          sx={{
-            width: isMobile ? "calc(100% - 178px)" : 304,
-          }}
+      <Tooltip title={tooltipTitle} placement="right" arrow>
+        <WatchVideoCommentContainer
+          key={index}
+          style={style}
         >
-          {thread.data.comments[index].body}
-        </WatchVideoCommentBase>
-        <WatchVideoCommentBase
-          sx={{
-            width: isMobile ? 178 : 120,
-          }}
-        >
-          {format(thread.data.comments[index].posMs - (60*60*9 * 1000), "HH:mm:ss")}
-        </WatchVideoCommentBase>
-      </WatchVideoCommentContainer>
+          <WatchVideoCommentBase
+            sx={{
+              width: isMobile ? "calc(100% - 178px)" : 360,
+            }}
+          >
+            {comment.body}
+          </WatchVideoCommentBase>
+          <WatchVideoCommentBase
+            sx={{
+              width: isMobile ? 178 : 120,
+            }}
+          >
+            {format(comment.posMs - (60*60*9 * 1000), "HH:mm:ss")}
+          </WatchVideoCommentBase>
+        </WatchVideoCommentContainer>
+      </Tooltip>
     )
   };
 
