@@ -1,5 +1,5 @@
 import { getBlob, ref } from "firebase/storage";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { firestorage } from "../libs/InitFirebase";
 import { useLocalStorage } from "./useLocalStorage";
@@ -14,11 +14,26 @@ export function useFireStorage(
 ) {
   const [data, setData] = useState(initialState);
   const [isJosh] = useLocalStorage('josh', 'false');
+  const initialStateRef = useRef(initialState);
+
+  // initialStateの最新値を保持
+  useEffect(() => {
+    initialStateRef.current = initialState;
+  }, [initialState]);
 
   useEffect(() => {
-    if (!path || path === "") return;
+    if (!path || path === "") {
+      setData(initialStateRef.current);
+      return;
+    }
     // Josh認証が通らなければthread.gzはダウンロードしない
-    if (path.match(/thread.gz/) && isJosh === 'false') return;
+    if (path.match(/thread.gz/) && isJosh === 'false') {
+      setData(initialStateRef.current);
+      return;
+    }
+    
+    // pathが変更されたときは、まずinitialStateにリセット
+    setData(initialStateRef.current);
     
     let isCancelled = false;
     
@@ -35,19 +50,21 @@ export function useFireStorage(
             setData(parsedData);
           } catch (parseError) {
             console.error('Failed to parse JSON from Firebase Storage:', parseError);
-            setData(initialState);
+            if (!isCancelled) {
+              setData(initialStateRef.current);
+            }
           }
         };
         reader.onerror = () => {
           if (isCancelled) return;
           console.error('FileReader error while reading blob');
-          setData(initialState);
+          setData(initialStateRef.current);
         };
         reader.readAsText(blob);
       } catch (error) {
         if (isCancelled) return;
         console.error('Failed to fetch data from Firebase Storage:', error);
-        setData(initialState);
+        setData(initialStateRef.current);
       }
     };
     

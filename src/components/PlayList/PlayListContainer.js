@@ -32,8 +32,13 @@ export const PlayListContainer = memo(({ sx, playlistData, listId }) => {
   const sortChange = useMemo(() => createSortFunction(sort), [sort]);
 
   const sortedVideos = useMemo(() => {
+    if (!playlistData || !playlistData.videos) return [];
     return [...playlistData.videos].sort(sortChange).filter(v => v);
-  }, [playlistData.videos, sortChange]);
+  }, [playlistData?.videos, sortChange]);
+
+  if (!playlistData || !playlistData.videos) {
+    return null;
+  }
 
   return (
     <Box {...sx}>
@@ -55,7 +60,7 @@ export const PlayListContainer = memo(({ sx, playlistData, listId }) => {
          */}
         {sortedVideos.map((video, index, array) => (
           <Box
-            key={video.id}
+            key={`${listId}-${video.id}-${index}`}
           >
             <VideoListItem
               videoId={video.id}

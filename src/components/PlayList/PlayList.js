@@ -23,9 +23,14 @@ export const PlayList = memo(({ sx, playlistData }) => {
   return (
     <Box {...sx}>
       {listId === 0 ? (
-        <PublicPlayListContainer playlistData={playlistData} />
+        <PublicPlayListContainer key="public" playlistData={playlistData || []} />
       ) : (
-        <PlayListContainer playlistData={playlistData.find(playlist => playlist.id === listId)} listId={listId} />
+        (() => {
+          const foundPlaylist = playlistData?.find(playlist => playlist.id === listId);
+          return foundPlaylist ? (
+            <PlayListContainer key={listId} playlistData={foundPlaylist} listId={listId} />
+          ) : null;
+        })()
       )}
     </Box>
   )

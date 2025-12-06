@@ -160,7 +160,7 @@ export const PublicPlayListItem = memo(({ sx, playlistId, playlistTitle, updateA
           <PublicPlayListMedia>
             {videos.map((video, index) => (
               <PublicPlayListMediaContainer
-                key={video.id}
+                key={`${playlistId}-${video.id}-${index}`}
                 marginLeft={index > 0 ? 1 : 0}
               >
                 {index < 2 ? (

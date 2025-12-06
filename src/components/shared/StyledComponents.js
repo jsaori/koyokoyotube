@@ -70,3 +70,13 @@ export const SideContainerListItemButton = styled(ListItemButton)(({ theme }) =>
     }
   }
 }));
+
+// チャンネルページ内のタブページ共通スタイル
+export const TabPageBox = styled(Box)(({ theme }) => ({
+  display: "flex",
+  width: "100%",
+  [theme.breakpoints.down('md')]: {
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
+}));

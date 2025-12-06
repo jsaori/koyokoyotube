@@ -1,12 +1,13 @@
 import { useParams } from "react-router-dom";
 
 import styled from "@emotion/styled";
-import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 
 import { WatchVideoHeader } from "../components/WatchVideoContents/WatchVideoHeader";
 import { WatchVideoMain } from "../components/WatchVideoContents/WatchVideoMain";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getVideoTitle } from "../libs/initYoutube";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 
 const WatchPageFullWidth = styled(Box)(({ theme }) => ({
   margin: '0 auto',
@@ -34,8 +35,7 @@ const WatchPageContainer = styled(Box)(({ theme }) => ({
  * 動画閲覧ページ（レスポンシブ対応）
  */
 export default function WatchPage() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { isMobile } = useBreakpoint();
   
   // 動画IDの取得
   const videoid = useParams().videoid;
@@ -43,13 +43,15 @@ export default function WatchPage() {
   // 動画タイトルの取得
   // Youtubeのメタ情報から取得する
   const [title, setTitle] = useState("");
-  useEffect(() => {
-    const getTitle = async () => {
-      const res = await getVideoTitle(videoid);
-      setTitle(res);
-    };
-    getTitle();
+  
+  const getTitle = useCallback(async () => {
+    const res = await getVideoTitle(videoid);
+    setTitle(res);
   }, [videoid]);
+
+  useEffect(() => {
+    getTitle();
+  }, [getTitle]);
 
   return (
     <WatchPageFullWidth>

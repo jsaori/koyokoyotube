@@ -23,7 +23,7 @@ import { useLocalStorage } from "../hooks/useLocalStorage";
 
     // 初期ページに遷移
     navigate("/channel/koyori")
-  });
+  }, [isJosh, navigate, setJosh]);
 
   return (
     <></>
