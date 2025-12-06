@@ -29,10 +29,30 @@ export const VideoList = memo(({ sx, videoData }) => {
 
   const searchList = useMemo(() => {
     const search = query.get('search_query') !== null ? query.get('search_query') : "";
-    return videoData.filter((video) => {
+    // 空欄の場合は全件表示
+    if (search === "") {
+      // IDで重複排除（最初に出現したIDのみを保持）
+      const uniqueMap = new Map();
+      videoData.forEach((video) => {
+        if (!uniqueMap.has(video.id)) {
+          uniqueMap.set(video.id, video);
+        }
+      });
+      return Array.from(uniqueMap.values());
+    }
+    // 検索クエリがある場合はフィルタリング
+    const filtered = videoData.filter((video) => {
       const reg = new RegExp(search, 'i');
       return (reg.test(video.title));
     });
+    // IDで重複排除（最初に出現したIDのみを保持）
+    const uniqueMap = new Map();
+    filtered.forEach((video) => {
+      if (!uniqueMap.has(video.id)) {
+        uniqueMap.set(video.id, video);
+      }
+    });
+    return Array.from(uniqueMap.values());
   }, [query, videoData]);
 
   const [sort, setSort] = useState("publishDesc");

@@ -21,8 +21,9 @@ export const SearchBar = memo(({ sx, placeholder, fontSize }) => {
   const { query, updateQuery } = useQueryString();
 
   const onSubmit = useCallback((data) => {
-      if (!data.search_query) return;
-      updateQuery({ search_query: data.search_query }, { excludeKeys: ["page"] });
+      // 空欄の場合も全件表示のためにクエリパラメータを更新
+      const searchQuery = data.search_query || "";
+      updateQuery({ search_query: searchQuery }, { excludeKeys: ["page"] });
   }, [updateQuery]);
 
   const onReset = useCallback(() => {
