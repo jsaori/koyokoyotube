@@ -6,7 +6,6 @@ import { Box, Tab, Tabs } from "@mui/material";
 
 import PlayListPage from "./PlayListPage";
 import VideoPage from "./VideoPage";
-import { useLocalStorage } from "../hooks/useLocalStorage";
 import JPage from "./JPage";
 
 //#region ユーザー定義スタイルコンポーネント
@@ -94,8 +93,6 @@ export default function ChannelPage({ subpage }) {
     navigate(`/channel/${chname}/${TabPageKey[newTabId]}`);
   };
 
-  const [isJosh] = useLocalStorage('josh', 'false');
-
   return (
     <>
       {/**
@@ -116,7 +113,7 @@ export default function ChannelPage({ subpage }) {
           >
             <Tab label="再生リスト" {...a11yProps(0)} disableRipple />
             <Tab label="動画一覧" {...a11yProps(1)} disableRipple />
-            {isJosh === 'true' && <Tab label="実況スレ登録" {...a11yProps(99)} disableRipple />}
+            <Tab label="実況スレ登録" {...a11yProps(99)} disableRipple />
           </Tabs>
         </ChannelMainBox>
       </ChannelPageContainer>

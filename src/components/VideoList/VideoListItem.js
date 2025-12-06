@@ -8,7 +8,6 @@ import ChatIcon from '@mui/icons-material/Chat';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import { LazyLoadImage } from "react-lazy-load-image-component";
 
-import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 
 //#region ユーザー定義スタイルコンポーネント
@@ -142,9 +141,6 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
     }
   }).join(':');
 
-  // Josh認証確認
-  const [isJosh] = useLocalStorage('josh', 'false');
-
   const [openDialog, setOpenDialog] = useState(false);
   const handleClickOpen = () => {
     setOpenDialog(true);
@@ -213,30 +209,26 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
           />
         </VideoListDiscription>
       </VideoListListItemButton>
-      {isJosh === 'true' &&
-        <>
-          <ChatButton
-            onClick={handleClickOpen}
-          >
-            {comments ?
-              <ChatIcon
-                fontSize="small"
-              /> :
-              <AppRegistrationIcon
-                fontSize="small"
-                sx={{
-                  color: "primary.main"
-                }}
-              />
-            }
-          </ChatButton>
-          <RegistThreadDialog
-            open={openDialog}
-            onClose={handleClose}
-            youtubeid={videoId}
+      <ChatButton
+        onClick={handleClickOpen}
+      >
+        {comments ?
+          <ChatIcon
+            fontSize="small"
+          /> :
+          <AppRegistrationIcon
+            fontSize="small"
+            sx={{
+              color: "primary.main"
+            }}
           />
-        </>
-      }
+        }
+      </ChatButton>
+      <RegistThreadDialog
+        open={openDialog}
+        onClose={handleClose}
+        youtubeid={videoId}
+      />
     </VideoListListItem>
   )
 });

@@ -12,7 +12,6 @@ import FileDownloadOffIcon from '@mui/icons-material/FileDownloadOff';
 import FlagIcon from '@mui/icons-material/Flag';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 
-import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
@@ -116,9 +115,6 @@ const CommentIconButton = styled(IconButton)(({ theme }) => ({
 export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  // Josh認証確認
-  const [isJosh] = useLocalStorage('josh', 'false');
 
   // コメント自動スクロール設定
   const [autoScroll, setAutoScroll] = useState(true);
@@ -190,7 +186,7 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
              * 現状役割の無いselect
              * 表/裏コメントの切替対応を行うかもしれない
              */}
-            {isJosh === "true" && <option value="99">実況コメント</option>}
+            <option value="99">実況コメント</option>
           </CommentTypeSelect>
         </WatchVideoMainPanelMenuContents>
         <WatchVideoMainPanelMenuContents
@@ -222,32 +218,28 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
           >
             <Fullscreen fontSize="small" />
           </CommentIconButton>
-          {isJosh === "true" && (
-            <>
-              <CommentIconButton
-                disableRipple
-                onClick={handleRegistOpen}
-              >
-                <AppRegistrationIcon fontSize="small" />
-              </CommentIconButton>
-              <CommentIconButton
-                disableRipple
-                onClick={handleReportOpen}
-              >
-                <FlagIcon fontSize="small" />
-              </CommentIconButton>
-              <RegistThreadDialog
-                 open={openRegistDialog}
-                 onClose={handleRegistClose}
-                 youtubeid={id}
-              />
-              <VideoReportForm
-                open={openReportDialog}
-                onClose={handleReportClose}
-                youtubeid={id}
-              />
-            </>
-          )}
+          <CommentIconButton
+            disableRipple
+            onClick={handleRegistOpen}
+          >
+            <AppRegistrationIcon fontSize="small" />
+          </CommentIconButton>
+          <CommentIconButton
+            disableRipple
+            onClick={handleReportOpen}
+          >
+            <FlagIcon fontSize="small" />
+          </CommentIconButton>
+          <RegistThreadDialog
+             open={openRegistDialog}
+             onClose={handleRegistClose}
+             youtubeid={id}
+          />
+          <VideoReportForm
+            open={openReportDialog}
+            onClose={handleReportClose}
+            youtubeid={id}
+          />
         </WatchVideoMainPanelMenuContents>
       </WatchVideoMainPanelMenuContainer>
       {/**

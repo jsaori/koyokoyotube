@@ -2,7 +2,6 @@ import { getBlob, ref } from "firebase/storage";
 import { useEffect, useState, useRef } from "react";
 
 import { firestorage } from "../libs/InitFirebase";
-import { useLocalStorage } from "./useLocalStorage";
 
 /**
  * Firebase Storageのデータを管理するHOOK
@@ -13,7 +12,6 @@ export function useFireStorage(
   initialState
 ) {
   const [data, setData] = useState(initialState);
-  const [isJosh] = useLocalStorage('josh', 'false');
   const initialStateRef = useRef(initialState);
 
   // initialStateの最新値を保持
@@ -23,11 +21,6 @@ export function useFireStorage(
 
   useEffect(() => {
     if (!path || path === "") {
-      setData(initialStateRef.current);
-      return;
-    }
-    // Josh認証が通らなければthread.gzはダウンロードしない
-    if (path.match(/thread.gz/) && isJosh === 'false') {
       setData(initialStateRef.current);
       return;
     }
@@ -73,7 +66,7 @@ export function useFireStorage(
     return () => {
       isCancelled = true;
     };
-  }, [path, isJosh]);
+  }, [path]);
 
   return data;
 }
