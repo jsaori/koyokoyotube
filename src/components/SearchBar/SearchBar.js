@@ -1,12 +1,12 @@
 import { memo, useCallback, useEffect } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
 import { InputBase, Paper, IconButton, Divider } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import styled from "@emotion/styled";
-import queryString from "query-string";
+
+import { useQueryString } from "../../hooks/useQueryString";
 
 const SearchBarPaper = styled(Paper)(({ theme }) => ({
   display: 'flex',
@@ -17,47 +17,24 @@ const SearchBarPaper = styled(Paper)(({ theme }) => ({
 }));
 
 export const SearchBar = memo(({ sx, placeholder, fontSize }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { register, handleSubmit, resetField, watch, setValue } = useForm();
-
-  const query = queryString.parse(location.search);
+  const { query, updateQuery } = useQueryString();
 
   const onSubmit = useCallback((data) => {
       if (!data.search_query) return;
-      let queryStr = "";
-      query.search_query = data.search_query;
-      Object.keys(query).forEach((key, index) => {
-        if (key === "page") return;
-        if (queryStr !== "") queryStr += "&";
-        queryStr += key + "=" + query[key];
-      });
-      navigate({
-        pathname: location.pathname,
-        search: queryStr
-      });
-  }, [navigate, location.pathname, query]);
+      updateQuery({ search_query: data.search_query }, { excludeKeys: ["page"] });
+  }, [updateQuery]);
 
   const onReset = useCallback(() => {
     resetField('search_query');
-    let queryStr = "";
-    delete query.search_query;
-    Object.keys(query).forEach((key, index) => {
-      if (key === "page") return;
-      if (queryStr !== "") queryStr += "&";
-      queryStr += key + "=" + query[key];
-    });
-    navigate({
-      pathname: location.pathname,
-      search: queryStr
-    });
-  }, [navigate, resetField, location.pathname, query]);
+    updateQuery({ search_query: null }, { excludeKeys: ["page"] });
+  }, [resetField, updateQuery]);
 
   useEffect(() => {
     if (query.search_query && typeof query.search_query === 'string') {
       setValue('search_query', query.search_query);
     }
-  }, [query.search_query, setValue]);
+  }, [query, setValue]);
 
   return (
     <SearchBarPaper

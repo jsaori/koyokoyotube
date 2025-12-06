@@ -204,9 +204,15 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   // Youtube動画タイトル取得
   const [title, setTitle] = useState("");
   useEffect(() => {
+    if (!youtubeId) return;
     const getTitle = async () => {
-      const res = await getVideoTitle(youtubeId);
-      setTitle(res);
+      try {
+        const res = await getVideoTitle(youtubeId);
+        setTitle(res);
+      } catch (error) {
+        console.error(`Failed to get video title for ${youtubeId}:`, error);
+        setTitle("");
+      }
     };
     getTitle();
   }, [youtubeId]);
@@ -214,9 +220,15 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   // Youtube動画に紐付くチャンネルID取得
   const [channelId, setChannelId] = useState("");
   useEffect(() => {
+    if (!youtubeId) return;
     const getChannelIdFunc = async() => {
-      const res = await getChannelId(youtubeId);
-      setChannelId(res);
+      try {
+        const res = await getChannelId(youtubeId);
+        setChannelId(res);
+      } catch (error) {
+        console.error(`Failed to get channel ID for ${youtubeId}:`, error);
+        setChannelId("");
+      }
     };
     getChannelIdFunc();
   }, [youtubeId]);
@@ -280,7 +292,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
       <Stack spacing={1} sx={{ mt: 2 }}>
         {registeredData.threads.map((thread, index) => (
           <TextArea
-            key={`$registerd${index}`}
+            key={`registered-${thread.url}`}
           >
             <IconButton
               disabled
@@ -303,7 +315,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
           return (
             <React.Fragment key={field.id}>
               <TextArea
-                key={`new${index}`}
+                key={field.id}
               >
                 <IconButton
                   onClick={() => remove(index)}

@@ -15,22 +15,20 @@ export const PublicPlayListContainer = memo(({ sx, playlistData }) => {
     <Box {...sx}>
       <List disablePadding>
         {playlistData.map((playlist, index) => (
-          <>
-            {playlist.videos.length > 0 &&
-              <PublicPlayListItem
-                key={index}
-                playlistId={playlist.id}
-                playlistTitle={playlist.title}
-                updateAt={playlist.updateAt}
-                videoCount={playlist.videos.length}
-                videos={playlist.videos.filter(v => v).slice(0, 3)}
-                sx={{
-                  mt: (index === 0 || isMobile) ? 0 : 1,
-                  mb: (index !== playlistData.length - 1 || isMobile) ? 0 : 2
-                }}
-              />
-            }
-          </>
+          playlist.videos.length > 0 && (
+            <PublicPlayListItem
+              key={playlist.id}
+              playlistId={playlist.id}
+              playlistTitle={playlist.title}
+              updateAt={playlist.updateAt}
+              videoCount={playlist.videos.length}
+              videos={playlist.videos.filter(v => v).slice(0, 3)}
+              sx={{
+                mt: (index === 0 || isMobile) ? 0 : 1,
+                mb: (index !== playlistData.length - 1 || isMobile) ? 0 : 2
+              }}
+            />
+          )
         ))}
       </List>
     </Box>

@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { Box } from "@mui/material";
@@ -14,7 +14,7 @@ export const PlayList = memo(({ sx, playlistData }) => {
   const param = useParams();
 
   const [listId, setListId] = useState(0);
-  useMemo(() => {
+  useEffect(() => {
     const id = param.listid !== undefined ? param.listid : 0;
     setListId(id);
     window.scrollTo(0, 0);

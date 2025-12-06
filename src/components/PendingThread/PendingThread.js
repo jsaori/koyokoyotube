@@ -47,7 +47,12 @@ export const PendingThread = memo(({ sx }) => {
         if (key === "") return;
         if (obj[key]) return;
         obj[key] = {};
-        obj[key].title = await getVideoTitle(key);
+        try {
+          obj[key].title = await getVideoTitle(key);
+        } catch (error) {
+          console.error(`Failed to get video title for ${key}:`, error);
+          obj[key].title = "タイトル取得失敗";
+        }
       }));
       setTitles((titles) => Object.assign(obj, titles));
     };
@@ -66,11 +71,11 @@ export const PendingThread = memo(({ sx }) => {
         ここから表示が消えればコメント登録が完了しています.<br />
         ※動画にコメントが反映されていない場合キャッシュを削除すれば反映されるかもしれません.もしくはバグ※<br /><br />
       </BodySectionTypography>
-      {Object.keys(pendingData).map((key, index) => (
-        <React.Fragment key={index}>
+      {Object.keys(pendingData).map((key) => (
+        <React.Fragment key={key}>
           <Link href={`https://www.youtube.com/watch?v=${key}`} rel="noopener noreferrer" target="_blank" underline="always">{titles[key]?.title}</Link>
           {pendingData[key].threads.map((thread, i) => (
-            <URLTypography key={i}>
+            <URLTypography key={`${key}-${i}-${thread.url}`}>
               {`${thread.url}`}<br />
             </URLTypography>
           ))}

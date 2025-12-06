@@ -10,7 +10,7 @@ import { useTheme } from "@emotion/react";
 import { ColorModeContext } from "../Layout/Layout";
 
 //#region ユーザー定義スタイルコンポーネント
-const HeaderMaiinWidthBox = styled(Box)({
+const HeaderMainWidthBox = styled(Box)({
   margin: '0 auto'
 });
 //#endregion
@@ -36,7 +36,7 @@ export default function Header() {
         <Toolbar
           variant="dense"
         >
-          <HeaderMaiinWidthBox
+          <HeaderMainWidthBox
             sx={{
               width: location.pathname.match(/watch/) === null ? 1280 : 1590
             }}
@@ -59,7 +59,7 @@ export default function Header() {
             >
               {theme.palette.mode === 'light' ? <LightModeIcon /> : <DarkModeIcon /> }
             </IconButton>
-          </HeaderMaiinWidthBox>
+          </HeaderMainWidthBox>
         </Toolbar>
       </AppBar>
       <Toolbar

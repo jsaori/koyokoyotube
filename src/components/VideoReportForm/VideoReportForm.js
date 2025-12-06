@@ -9,6 +9,14 @@ import { FormCommitButton } from "../shared/StyledComponents";
 
 const CommitButton = FormCommitButton;
 
+// 一意のIDを生成
+function createUuid(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(a) {
+      let r = (new Date().getTime() + Math.random() * 16)%16 | 0, v = a === 'x' ? r : ((r & 0x3) | 0x8);
+      return v.toString(16);
+   });
+}
+
 export const VideoReportForm = memo((props) => {
   const {onClose, open, youtubeid} = props;
   const uuid = createUuid();
@@ -109,11 +117,3 @@ export const VideoReportForm = memo((props) => {
     </>
   )
 });
-
-// 一意のIDを生成
-function createUuid(){
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(a) {
-      let r = (new Date().getTime() + Math.random() * 16)%16 | 0, v = a === 'x' ? r : ((r & 0x3) | 0x8);
-      return v.toString(16);
-   });
-}

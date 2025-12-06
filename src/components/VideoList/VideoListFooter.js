@@ -1,9 +1,9 @@
 import { memo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import { Box, Pagination, useMediaQuery, useTheme } from "@mui/material";
-import queryString from "query-string";
 import styled from "@emotion/styled";
+
+import { useQueryString } from "../../hooks/useQueryString";
 
 //#region ユーザー定義スタイルコンポーネント
 const VideoListFooterMain = styled(Box)(({ theme }) => ({
@@ -16,23 +16,11 @@ const VideoListFooterMain = styled(Box)(({ theme }) => ({
 export const VideoListFooter = memo(({ sx, videoCount, page }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const query = queryString.parse(location.search);
+  const { updateQuery } = useQueryString();
 
   // ページ変更イベント
   const handlePageChange = (event, value) => {
-    let queryStr = "";
-    query.page = value;
-    Object.keys(query).forEach((key, index) => {
-      if (queryStr !== "") queryStr += "&";
-      queryStr += key + "=" + query[key];
-    });
-    navigate({
-      pathname: location.pathname,
-      search: queryStr
-    })
+    updateQuery({ page: value });
   };
 
   return (

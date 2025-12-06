@@ -100,7 +100,7 @@ export const WatchVideoTimeStamp = memo(({ sx, timeStamp }) => {
             onChange={handleAuthChange}
           >
             {timeStamp.map((stamp, index) => (
-              <React.Fragment key={index}>
+              <React.Fragment key={`stamp-${index}-${stamp.displayName}`}>
                 <option value={index}>{stamp.displayName}</option>
               </React.Fragment>
             ))}
@@ -113,7 +113,7 @@ export const WatchVideoTimeStamp = memo(({ sx, timeStamp }) => {
       <WatchVideoTimeStampMain>
         <WatchVideoTimeStampDisplay>
           {timeStamp[authNo]?.text.split(/(<br>)/).map((line, index) => (
-            <React.Fragment key={index}>
+            <React.Fragment key={`line-${authNo}-${index}-${line.substring(0, 20)}`}>
               {line.match(/<br>/) ? <br /> : (
                 <>
                   {parse(line, {replace})}

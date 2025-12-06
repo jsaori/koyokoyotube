@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { Box, List } from "@mui/material";
@@ -15,7 +15,7 @@ export const PlayListSideContainer = memo(({ sx, playlistData }) => {
 
   // 選択されている再生リストをURLから判定
   const [listId, setListId] = useState(0);
-  useMemo(() => {
+  useEffect(() => {
     const id = param.listid !== undefined ? param.listid : 0;
     setListId(id);
   }, [param.listid]);
@@ -24,18 +24,15 @@ export const PlayListSideContainer = memo(({ sx, playlistData }) => {
     <Box {...sx}>
       <List disablePadding>
         <PlayListSideContainerItem text="再生リスト一覧" selected={listId === 0} />
-        {playlistData.map((playlist, index) => (
-          <>
-            {playlist.videos.length > 0 &&
-              <PlayListSideContainerIconItem
-                key={index}
-                text={playlist.title}
-                listId={playlist.id}
-                selected={listId === playlist.id}
-              />
-            }
-          </>
-
+        {playlistData.map((playlist) => (
+          playlist.videos.length > 0 && (
+            <PlayListSideContainerIconItem
+              key={playlist.id}
+              text={playlist.title}
+              listId={playlist.id}
+              selected={listId === playlist.id}
+            />
+          )
         ))}
       </List>
     </Box>

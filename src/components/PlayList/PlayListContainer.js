@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import { Box, Divider, List, useMediaQuery, useTheme } from "@mui/material";
@@ -6,6 +6,7 @@ import { Box, Divider, List, useMediaQuery, useTheme } from "@mui/material";
 import { VideoListItem } from "../VideoList/VideoListItem";
 import { PlayListHeader } from "./PlayListHeader";
 import { PlayListMenu } from "./PlayListMenu";
+import { createSortFunction } from "../../libs/utilities";
 
 /**
  * 特定再生リストのコンテンツ一覧
@@ -28,25 +29,11 @@ export const PlayListContainer = memo(({ sx, playlistData, listId }) => {
     }
   }, [query]);
 
-  const sortChange = useCallback((prev, current) => {
-    let comparison = 0;
-    if (sort === "publishDesc") {
-      comparison = new Date(current.publishedAt) - new Date(prev.publishedAt);
-    } else if (sort === "publishAsc") {
-      comparison = new Date(prev.publishedAt) - new Date(current.publishedAt);
-    } else if (sort === "durationDesc") {
-      comparison = Number(current.duration) - Number(prev.duration);
-    } else if (sort === "durationAsc") {
-      comparison = Number(prev.duration) - Number(current.duration);
-    } else if (sort === "titleDesc") {
-      comparison = current.title < prev.title ? 1 : -1;
-    } else if (sort === "titleAsc") {
-      comparison = prev.title < current.title ? 1 : -1;
-    } else {
-      comparison = 0;
-    }
-    return comparison;
-  }, [sort]);
+  const sortChange = useMemo(() => createSortFunction(sort), [sort]);
+
+  const sortedVideos = useMemo(() => {
+    return [...playlistData.videos].sort(sortChange).filter(v => v);
+  }, [playlistData.videos, sortChange]);
 
   return (
     <Box {...sx}>
@@ -66,9 +53,9 @@ export const PlayListContainer = memo(({ sx, playlistData, listId }) => {
         {/**
          * コンテンツリスト
          */}
-        {playlistData.videos.sort(sortChange).filter(v => v).map((video, index) => (
+        {sortedVideos.map((video, index, array) => (
           <Box
-            key={index}
+            key={video.id}
           >
             <VideoListItem
               videoId={video.id}
@@ -81,10 +68,10 @@ export const PlayListContainer = memo(({ sx, playlistData, listId }) => {
               listId={listId}
               sort={sort}
               sx={{
-                mb: playlistData.videos.length - 1 === index ? 3 : 0
+                mb: array.length - 1 === index ? 3 : 0
               }}
             />
-            {playlistData.videos.length - 1 > index && <Divider sx={{ pt: !isMobile ? 2 : 0.5, mb: !isMobile ? 2 : 0.5 }} />}
+            {array.length - 1 > index && <Divider sx={{ pt: !isMobile ? 2 : 0.5, mb: !isMobile ? 2 : 0.5 }} />}
           </Box>
         ))}
       </List>

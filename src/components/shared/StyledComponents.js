@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Box, Button } from "@mui/material";
+import { Box, Button, ListItem, ListItemButton } from "@mui/material";
 
 /**
  * 共通スタイルコンポーネント
@@ -46,4 +46,27 @@ export const ListSelect = styled("select")(({ theme }) => ({
 export const FormCommitButton = styled(Button)((theme) => ({
   marginTop: 16,
   width: 70
+}));
+
+// サイドコンテナ系の共通スタイル
+export const SideContainerListItem = styled(ListItem)(({ theme }) => ({
+  dense: "true",
+  height: 40
+}));
+
+export const SideContainerListItemButton = styled(ListItemButton)(({ theme }) => ({
+  height: 40,
+  '&.Mui-selected': {
+    color: theme.palette.primary.dark,
+    "& .MuiListItemIcon-root": {
+      color: theme.palette.primary.dark,
+    }
+  },
+  '&:hover, &.Mui-selected:hover': {
+    color: theme.palette.primary.dark,
+    backgroundColor: theme.palette.primary.light,
+    "& .MuiListItemIcon-root": {
+      color: theme.palette.primary.dark,
+    }
+  }
 }));

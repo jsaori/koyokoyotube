@@ -10,3 +10,30 @@ export const TimeToSeconds = (time) => {
   }
   return seconds;
 }
+
+/**
+ * 動画ソート関数を生成する
+ * @param {string} sort - ソートタイプ ("publishDesc", "publishAsc", "durationDesc", "durationAsc", "titleDesc", "titleAsc")
+ * @returns {Function} ソート比較関数
+ */
+export const createSortFunction = (sort) => {
+  return (prev, current) => {
+    let comparison = 0;
+    if (sort === "publishDesc") {
+      comparison = new Date(current.publishedAt) - new Date(prev.publishedAt);
+    } else if (sort === "publishAsc") {
+      comparison = new Date(prev.publishedAt) - new Date(current.publishedAt);
+    } else if (sort === "durationDesc") {
+      comparison = Number(current.duration) - Number(prev.duration);
+    } else if (sort === "durationAsc") {
+      comparison = Number(prev.duration) - Number(current.duration);
+    } else if (sort === "titleDesc") {
+      comparison = current.title < prev.title ? 1 : -1;
+    } else if (sort === "titleAsc") {
+      comparison = prev.title < current.title ? 1 : -1;
+    } else {
+      comparison = 0;
+    }
+    return comparison;
+  };
+}
