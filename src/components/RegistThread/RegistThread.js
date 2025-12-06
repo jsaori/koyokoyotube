@@ -526,6 +526,8 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
           );
         })}
         {fields.map((field, index) => {
+          // 登録済みスレッドの数を取得して連番にする
+          const threadNumber = registeredData.threads.length + index + 1;
           return (
             <React.Fragment key={field.id}>
               <TextArea
@@ -537,7 +539,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
                   <ClearIcon />
                 </IconButton>
                 <FlexTextForm
-                  label={`実況スレ URL${index + 1}`}
+                  label={`実況スレ URL${threadNumber}`}
                   variant="standard"
                   type="url"
                   // threadurlは必須
