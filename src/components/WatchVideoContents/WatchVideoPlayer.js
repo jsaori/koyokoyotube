@@ -1,7 +1,8 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { Box, useMediaQuery, useTheme } from "@mui/material";
+import { Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
 import styled from "@emotion/styled";
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import useMeasure from "react-use-measure";
 import Konva from "konva";
 import { Layer, Stage, Text } from "react-konva";
@@ -28,9 +29,15 @@ const WatchVideoMainPlayerContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-const WatchVideoMainPlayer = styled(Box)(({ theme }) => ({
+const WatchVideoMainPlayer = styled(Box)(({ theme, isFullscreen }) => ({
   backgroundColor: "black",
-  aspectRatio: "640/360",
+  ...(isFullscreen ? {
+    width: "min(100vw, 100vh * 640 / 360)",
+    height: "min(100vh, 100vw * 360 / 640)",
+    aspectRatio: "640/360",
+  } : {
+    aspectRatio: "640/360",
+  }),
   overflow: "hidden",
   position: "relative",
 }));
@@ -39,6 +46,18 @@ const WatchVideoMainPlayerLayer = styled(Box)(({ theme }) => ({
   position: "absolute",
   width: "100%",
   height: "100%",
+}));
+
+const FullscreenExitButton = styled(IconButton)(({ theme }) => ({
+  position: "absolute",
+  top: 8,
+  right: 8,
+  zIndex: 1000,
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+  color: "white",
+  "&:hover": {
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+  },
 }));
 
 const WatchVideoMediaBox = styled(Box)(({ theme }) => ({
@@ -98,6 +117,9 @@ const CommentText = ({ isMobile, ...props }) => {
 export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, handleCommentIndex, handleFullscreen }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // フルスクリーン状態を検知
+  const isFullscreen = handleFullscreen?.active || false;
   
   // Youtubeプレイヤーロード
   const { playerInstance, ...ytPlayerProps } = useYoutubePlayer({
@@ -247,7 +269,18 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
       <FullScreen
         handle={handleFullscreen}
       >
-        <WatchVideoMainPlayer>
+        <WatchVideoMainPlayer isFullscreen={isFullscreen}>
+          {/**
+           * フルスクリーン解除ボタン（スマホのみ）
+           */}
+          {isFullscreen && isMobile && (
+            <FullscreenExitButton
+              onClick={handleFullscreen.exit}
+              aria-label="フルスクリーンを終了"
+            >
+              <FullscreenExitIcon />
+            </FullscreenExitButton>
+          )}
           {/**
            * コメントレンダラ
            */}
