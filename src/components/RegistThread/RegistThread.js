@@ -156,7 +156,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   const onSubmit = (data) => {
     // 編集されたスレッドのバリデーション
     const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
-    for (const [index, thread] of editedThreadsMap.entries()) {
+    for (const thread of editedThreadsMap.values()) {
       const url = thread.url;
       if (!url || !threadPattern.test(url)) {
         // バリデーションエラーがある場合は送信を阻止
