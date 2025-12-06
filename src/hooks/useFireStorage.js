@@ -19,21 +19,44 @@ export function useFireStorage(
     if (!path || path === "") return;
     // Josh認証が通らなければthread.gzはダウンロードしない
     if (path.match(/thread.gz/) && isJosh === 'false') return;
+    
+    let isCancelled = false;
+    
     const getData = async () => {
-      await getBlob(ref(firestorage, path))
-        .then((blob) => {
-          const reader = new FileReader();
-          reader.readAsText(blob);
-          reader.onload = () => {
-            setData(JSON.parse(reader.result));
+      try {
+        const blob = await getBlob(ref(firestorage, path));
+        if (isCancelled) return;
+        
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (isCancelled) return;
+          try {
+            const parsedData = JSON.parse(reader.result);
+            setData(parsedData);
+          } catch (parseError) {
+            console.error('Failed to parse JSON from Firebase Storage:', parseError);
+            setData(initialState);
           }
-        })
-        .catch((error) => {
+        };
+        reader.onerror = () => {
+          if (isCancelled) return;
+          console.error('FileReader error while reading blob');
           setData(initialState);
-        });
+        };
+        reader.readAsText(blob);
+      } catch (error) {
+        if (isCancelled) return;
+        console.error('Failed to fetch data from Firebase Storage:', error);
+        setData(initialState);
+      }
     };
+    
     getData();
-  }, [path, initialState, isJosh]);
+    
+    return () => {
+      isCancelled = true;
+    };
+  }, [path, isJosh]);
 
   return data;
 }
