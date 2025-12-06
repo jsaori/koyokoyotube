@@ -30,18 +30,16 @@ const makeYouTubeApiRequest = async (endpoint, params = {}) => {
 
 /**
  * Youtube動画のタイトルを取得
- * RSSからではなくAPIからタイトルを取得する
+ * APIキー不要のNoembedサービスを使用してタイトルを取得する
  * @param {string} videoId - 動画ID
  * @returns {Promise<string>} 動画タイトル
  */
 export const getVideoTitle = async (videoId) => {
   if (!videoId) return "";
   try {
-    const data = await makeYouTubeApiRequest('videos', {
-      part: 'snippet',
-      id: videoId
-    });
-    return data.items?.[0]?.snippet?.title || "";
+    const url = `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`;
+    const response = await axios.get(url);
+    return response.data.title || "";
   } catch (error) {
     console.error('Failed to get video title:', error);
     return "";
