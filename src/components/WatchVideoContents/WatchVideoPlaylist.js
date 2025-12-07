@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo } from "react";
 
 import { Box, ListItem, ListItemButton, Typography, IconButton, Tooltip } from "@mui/material";
 import styled from "@emotion/styled";
@@ -240,7 +240,6 @@ export const WatchVideoPlaylist = memo(({ sx, id }) => {
     navigateToFirst,
     navigateToRandom,
     playlistId,
-    channel,
     sort,
     isRandom
   } = usePlayingVideo();
