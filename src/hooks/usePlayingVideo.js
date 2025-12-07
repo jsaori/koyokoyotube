@@ -17,7 +17,10 @@ export function usePlayingVideo() {
   const channel = query.channel || "";
   const playlistId = query.playlist || "";
   const sort = query.sort || "publishDesc";
-  const playlistPath = playlistId !== "" ? `data/playlist/${CHANNEL_ID_LIST[channel]}/playlist.gz` : "";
+  // 再生リストが指定されていない場合でも、動画が含まれる再生リストを検索するために再生リストデータを取得
+  // channelが空の場合はデフォルトのチャンネル（koyori）を使用
+  const effectiveChannel = channel !== "" ? channel : "koyori";
+  const playlistPath = `data/playlist/${CHANNEL_ID_LIST[effectiveChannel]}/playlist.gz`;
   const playlist = useFireStorage(playlistPath, null);
 
   const sortChange = useMemo(() => createSortFunction(sort), [sort]);
@@ -40,21 +43,41 @@ export function usePlayingVideo() {
   // クエリパラメータに基づくリストのindexに対応する動画を読み込み
   const navigateClickVideo = useCallback((index) => {
     if (!videosData || index < 0 || index >= videosData.length) return;
-    navigate(`/watch/${videosData[index].id}?channel=${channel}&playlist=${playlistId}&sort=${sort}`);
-  }, [channel, playlistId, sort, videosData, navigate]);
+    navigate(`/watch/${videosData[index].id}?channel=${effectiveChannel}&playlist=${playlistId}&sort=${sort}`);
+  }, [effectiveChannel, playlistId, sort, videosData, navigate]);
 
   // クエリパラメータから、現在再生中の動画の次のindexの動画を読み込み
   const navigateNextVideo = useCallback(() => {
     if (!videosData || !videoId) return;
     const currentIndex = videosData.findIndex(video => video.id === videoId);
     if (currentIndex === -1 || currentIndex + 1 >= videosData.length) return;
-    navigate(`/watch/${videosData[currentIndex + 1].id}?channel=${channel}&playlist=${playlistId}&sort=${sort}`);
-  }, [channel, playlistId, sort, videoId, videosData, navigate]);
+    navigate(`/watch/${videosData[currentIndex + 1].id}?channel=${effectiveChannel}&playlist=${playlistId}&sort=${sort}`);
+  }, [effectiveChannel, playlistId, sort, videoId, videosData, navigate]);
+
+  // 現在の動画が含まれる全再生リストを検索
+  const playlistsContainingVideo = useMemo(() => {
+    if (!playlist || !videoId) return [];
+    // 探索・結合と重い処理を行うのでメモ化
+    const foundPlaylists = playlist.data?.playlists?.filter(p => 
+      p.videos && p.videos.some(v => v && v.id === videoId)
+    ) || [];
+    return foundPlaylists;
+  }, [playlist, videoId]);
+
+  // 再生リストを選択してナビゲート
+  const navigateToPlaylist = useCallback((selectedPlaylistId) => {
+    navigate(`/watch/${videoId}?channel=${effectiveChannel}&playlist=${selectedPlaylistId}&sort=${sort}`);
+  }, [effectiveChannel, sort, videoId, navigate]);
 
   return ({
     playlistTitle: playlistTitle,
     videosData: videosData,
     navigateClickVideo: navigateClickVideo,
-    navigateNextVideo: navigateNextVideo
+    navigateNextVideo: navigateNextVideo,
+    playlistsContainingVideo: playlistsContainingVideo,
+    navigateToPlaylist: navigateToPlaylist,
+    playlistId: playlistId,
+    channel: effectiveChannel,
+    sort: sort
   });
 }
