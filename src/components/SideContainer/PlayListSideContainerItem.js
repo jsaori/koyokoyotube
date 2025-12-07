@@ -1,33 +1,10 @@
 import { memo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import styled from "@emotion/styled";
 import FolderIcon from '@mui/icons-material/Folder';
-import { ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { ListItemIcon, ListItemText } from "@mui/material";
 
-//#region ユーザー定義スタイルコンポーネント
-const SideContainerListItem = styled(ListItem)({
-  dense: "true",
-  height: 40
-});
-
-const SideContainerListItemButton = styled(ListItemButton)(({ theme }) => ({
-  height: 40,
-  '&.Mui-selected': {
-    color: theme.palette.primary.dark,
-    "& .MuiListItemIcon-root": {
-      color: theme.palette.primary.dark,
-    }
-  },
-  '&:hover, &.Mui-selected:hover': {
-    color: theme.palette.primary.dark,
-    backgroundColor: theme.palette.primary.light,
-    "& .MuiListItemIcon-root": {
-      color: theme.palette.primary.dark,
-    }
-  }
-}));
-//#endregion
+import { SideContainerListItem, SideContainerListItemButton } from "../shared/StyledComponents";
 
 /**
  * サイドバーコンポーネント：ヘッダ

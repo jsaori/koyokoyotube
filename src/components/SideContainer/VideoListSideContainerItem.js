@@ -1,32 +1,9 @@
 import { memo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import styled from "@emotion/styled";
-import { ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { ListItemText } from "@mui/material";
 
-//#region ユーザー定義スタイルコンポーネント
-const SideContainerListItem = styled(ListItem)(({ theme }) => ({
-  dense: "true",
-  height: 40
-}));
-
-const SideContainerListItemButton = styled(ListItemButton)(({ theme }) => ({
-  height: 40,
-  '&.Mui-selected': {
-    color: theme.palette.primary.dark,
-    "& .MuiListItemIcon-root": {
-      color: theme.palette.primary.dark,
-    }
-  },
-  '&:hover, &.Mui-selected:hover': {
-    color: theme.palette.primary.dark,
-    backgroundColor: theme.palette.primary.light,
-    "& .MuiListItemIcon-root": {
-      color: theme.palette.primary.dark,
-    }
-  }
-}));
-//#endregion
+import { SideContainerListItem, SideContainerListItemButton } from "../shared/StyledComponents";
 
 /**
  * サイドバーコンポーネント

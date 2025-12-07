@@ -1,8 +1,7 @@
 import { getBlob, ref } from "firebase/storage";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import { firestorage } from "../libs/InitFirebase";
-import { useLocalStorage } from "./useLocalStrage";
 
 /**
  * Firebase Storageのデータを管理するHOOK
@@ -13,27 +12,61 @@ export function useFireStorage(
   initialState
 ) {
   const [data, setData] = useState(initialState);
-  const [isJosh] = useLocalStorage('josh', 'false');
+  const initialStateRef = useRef(initialState);
+
+  // initialStateの最新値を保持
+  useEffect(() => {
+    initialStateRef.current = initialState;
+  }, [initialState]);
 
   useEffect(() => {
-    if (!path || path === "") return;
-    // Josh認証が通らなければthread.gzはダウンロードしない
-    if (path.match(/thread.gz/) && isJosh === 'false') return;
+    if (!path || path === "") {
+      setData(initialStateRef.current);
+      return;
+    }
+    
+    // pathが変更されたときは、まずinitialStateにリセット
+    setData(initialStateRef.current);
+    
+    let isCancelled = false;
+    
     const getData = async () => {
-      await getBlob(ref(firestorage, path))
-        .then((blob) => {
-          const reader = new FileReader();
-          reader.readAsText(blob);
-          reader.onload = () => {
-            setData(JSON.parse(reader.result));
+      try {
+        const blob = await getBlob(ref(firestorage, path));
+        if (isCancelled) return;
+        
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (isCancelled) return;
+          try {
+            const parsedData = JSON.parse(reader.result);
+            setData(parsedData);
+          } catch (parseError) {
+            console.error('Failed to parse JSON from Firebase Storage:', parseError);
+            if (!isCancelled) {
+              setData(initialStateRef.current);
+            }
           }
-        })
-        .catch((error) => {
-          setData(initialState);
-        });
+        };
+        reader.onerror = () => {
+          if (isCancelled) return;
+          console.error('FileReader error while reading blob');
+          setData(initialStateRef.current);
+        };
+        reader.readAsText(blob);
+      } catch (error) {
+        if (isCancelled) return;
+        console.error('Failed to fetch data from Firebase Storage:', error);
+        setData(initialStateRef.current);
+      }
     };
+    
     getData();
-  }, [path, initialState, isJosh]);
+    
+    return () => {
+      isCancelled = true;
+    };
+  }, [path]);
 
   return data;
 }

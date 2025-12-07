@@ -6,15 +6,22 @@ import { Box, Tab, Tabs } from "@mui/material";
 
 import PlayListPage from "./PlayListPage";
 import VideoPage from "./VideoPage";
-import { useLocalStorage } from "../hooks/useLocalStrage";
 import JPage from "./JPage";
 
 //#region ユーザー定義スタイルコンポーネント
-const ChannelMainBox = styled(Box)({
-  maxWidth: 1280,
-  minWidth: 1280,
-  margin: '0 auto'
-});
+const ChannelMainBox = styled(Box)(({ theme }) => ({
+  margin: '0 auto',
+  [theme.breakpoints.up('md')]: {
+    maxWidth: 1280,
+    minWidth: 1280,
+  },
+  [theme.breakpoints.down('md')]: {
+    maxWidth: '100%',
+    width: '100%',
+    paddingLeft: 8,
+    paddingRight: 8,
+  },
+}));
 
 const ChannelPageContainer = styled(Box)(({ theme }) => ({
   width: '100%',
@@ -41,7 +48,7 @@ function TabPanel(props) {
     >
       {value === index && (
         <Box sx={{ pt: 3 }}>
-          <Box conponent="span">{children}</Box>
+          <Box component="span">{children}</Box>
         </Box>
       )}
     </div>
@@ -64,7 +71,7 @@ const TabPageKey = {
 };
 
 /**
- * プレイリストページ
+ * チャンネルページ（レスポンシブ対応）
  */
 export default function ChannelPage({ subpage }) {
   // ルーティング用関数
@@ -86,8 +93,6 @@ export default function ChannelPage({ subpage }) {
     navigate(`/channel/${chname}/${TabPageKey[newTabId]}`);
   };
 
-  const [isJosh] = useLocalStorage('josh', 'false');
-
   return (
     <>
       {/**
@@ -108,7 +113,7 @@ export default function ChannelPage({ subpage }) {
           >
             <Tab label="再生リスト" {...a11yProps(0)} disableRipple />
             <Tab label="動画一覧" {...a11yProps(1)} disableRipple />
-            {isJosh === 'true' && <Tab label="実況スレ登録" {...a11yProps(99)} disableRipple />}
+            <Tab label="実況スレ登録" {...a11yProps(99)} disableRipple />
           </Tabs>
         </ChannelMainBox>
       </ChannelPageContainer>

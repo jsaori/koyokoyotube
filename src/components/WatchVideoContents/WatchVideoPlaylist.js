@@ -1,13 +1,17 @@
 import { memo } from "react";
 
-import { Box, ListItem, ListItemButton } from "@mui/material";
+import { Box, ListItem, ListItemButton, Typography, IconButton, Tooltip } from "@mui/material";
 import styled from "@emotion/styled";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
+import { format } from "date-fns";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
 
 import { usePlayingVideo } from "../../hooks/usePlayingVideo";
 import { useTheme } from "@emotion/react";
-import { isMobile } from "react-device-detect";
+import { WatchVideoMainPanelMenuContainer, WatchVideoMainPanelMenuContents, ListSelect } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoPlaylistMain = styled(Box)(({ theme }) => ({
@@ -17,7 +21,12 @@ const WatchVideoPlaylistMain = styled(Box)(({ theme }) => ({
   right: 0,
   top: 0,
   bottom: 0,
-  position: !isMobile ? "absolute" : "relative",
+  [theme.breakpoints.up('md')]: {
+    position: "absolute",
+  },
+  [theme.breakpoints.down('md')]: {
+    position: "relative",
+  },
   overflow: "hidden"
 }));
 
@@ -49,7 +58,12 @@ const WatchVideoPlaylistHeaderSubText = styled(Box)(({ theme }) => ({
 }));
 
 const WatchVideoPlaylistContainer = styled(Box)(({ theme }) => ({
-  height: !isMobile ? "100%" : window.screen.height - 440,
+  [theme.breakpoints.up('md')]: {
+    height: "100%",
+  },
+  [theme.breakpoints.down('md')]: {
+    height: `calc(100vh - 440px)`,
+  },
   width: "100%",
   overflow: "hidden",
   position: "relative",
@@ -64,7 +78,13 @@ const WatchVideoPlaylistButton = styled(ListItemButton)(({ theme }) => ({
 
 const WatchVideoPlaylistIcon = styled(Box)(({ theme }) => ({
   marginRight: 8,
-  width: 96
+  flexShrink: 0,
+  [theme.breakpoints.up('md')]: {
+    width: 96,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: 64,
+  },
 }));
 
 const WatchVideoPlaylistTitle = styled(Box)(({ theme }) => ({
@@ -76,6 +96,133 @@ const WatchVideoPlaylistTitle = styled(Box)(({ theme }) => ({
   maxHeight: "2.8rem",
   overflow: "hidden",
 }));
+
+// 再生リストカード用のスタイル
+const PlaylistCardGroup = styled(Box)(({ theme }) => ({
+  marginBottom: "12px",
+  borderRadius: "8px",
+  backgroundColor: theme.palette.paper.light || theme.palette.background.paper,
+  border: `1px solid ${theme.palette.paper.contrastBorder || theme.palette.divider}`,
+  overflow: "hidden",
+  transition: "all 0.2s ease-in-out",
+  "&:hover": {
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+    borderColor: theme.palette.primary.main,
+  },
+  "&:last-child": {
+    marginBottom: 0,
+  },
+}));
+
+const PlaylistCardButton = styled(ListItemButton)(({ theme, isSelected }) => ({
+  padding: "12px 16px",
+  backgroundColor: isSelected ? theme.palette.action.selected || theme.palette.action.hover : "transparent",
+  borderLeft: isSelected ? `3px solid ${theme.palette.primary.main}` : "3px solid transparent",
+  transition: "all 0.2s ease-in-out",
+  "&:hover": {
+    backgroundColor: theme.palette.action.hover,
+  },
+}));
+
+const PlaylistCardContent = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  width: "100%",
+  gap: "12px",
+}));
+
+const PlaylistCardThumbnail = styled(LazyLoadImage)(({ theme }) => ({
+  borderRadius: "4px",
+  flexShrink: 0,
+  width: 96,
+  height: 54,
+  objectFit: "cover",
+}));
+
+const PlaylistCardInfo = styled(Box)(({ theme }) => ({
+  flex: 1,
+  minWidth: 0,
+  display: "flex",
+  flexDirection: "column",
+  gap: "4px",
+}));
+
+const PlaylistCardTitle = styled(Typography)(({ theme }) => ({
+  fontSize: 14,
+  fontWeight: 600,
+  lineHeight: 1.4,
+  color: theme.palette.text.primary,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+}));
+
+const PlaylistCardMeta = styled(Typography)(({ theme }) => ({
+  fontSize: 12,
+  color: theme.palette.text.secondary,
+  lineHeight: 1.4,
+}));
+
+const PlaylistListContainer = styled(Box)(({ theme }) => ({
+  overflowY: "auto",
+  overflowX: "hidden",
+  padding: "8px",
+  [theme.breakpoints.up('md')]: {
+    height: "100%",
+  },
+  [theme.breakpoints.down('md')]: {
+    height: `calc(100vh - 500px)`,
+  },
+}));
+
+// メニュー用のスタイル
+const StyledPlaylistMenuContainer = styled(WatchVideoMainPanelMenuContainer)(({ theme }) => ({
+  height: "auto",
+  minHeight: 40,
+  marginTop: "4px",
+  paddingTop: "8px",
+  paddingBottom: "8px",
+}));
+
+const PlaylistMenuSelect = styled(ListSelect)(({ theme }) => ({
+  maxHeight: 32,
+  fontSize: 13
+}));
+
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  height: 32,
+  width: 32,
+  color: theme.palette.control.contrastText,
+  backgroundColor: theme.palette.control.light,
+  border: "2px solid",
+  borderColor: theme.palette.control.dark,
+  padding: "4px",
+  "&:hover": {
+    backgroundColor: theme.palette.control.dark,
+    borderColor: theme.palette.control.dark,
+  },
+}));
+
+const MenuButtonContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  width: "100%",
+  gap: "8px",
+}));
+
+const MenuLeftSection = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+}));
+
+const MenuRightSection = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+}));
 //#endregion
 
 /**
@@ -83,65 +230,194 @@ const WatchVideoPlaylistTitle = styled(Box)(({ theme }) => ({
  */
 export const WatchVideoPlaylist = memo(({ sx, id }) => {
   // URLパラメータからプレイリスト情報を取得
-  const { playlistTitle, videosData, navigateClickVideo } = usePlayingVideo();
+  const { 
+    playlistTitle, 
+    videosData, 
+    navigateClickVideo,
+    playlistsContainingVideo,
+    navigateToPlaylist,
+    updateSort,
+    navigateToFirst,
+    navigateToRandom,
+    playlistId,
+    sort,
+    isRandom
+  } = usePlayingVideo();
 
   const theme = useTheme();
 
-  // 関連動画アイテム
-  const renderRow = ({index, style}) => {
-    return (
-      <ListItem
-        disablePadding
-        style={style}
-        sx={{
-          backgroundColor: videosData[index].id === id ? theme.palette.control.dark : theme.palette.control.main,
-          color: videosData[index].id === id ? theme.palette.primary.main : theme.palette.control.contrastText,
-        }}
-      >
-        <WatchVideoPlaylistButton
-          disableRipple
-          onClick={() => {
-            navigateClickVideo(index);
-          }}
-        >
-          <WatchVideoPlaylistIcon
-            component="img"
-            src={`https://i.ytimg.com/vi_webp/${videosData[index].id}/mqdefault.webp`}
-          />
-          <WatchVideoPlaylistTitle>
-            {videosData[index].title}
-          </WatchVideoPlaylistTitle>
-        </WatchVideoPlaylistButton>
-      </ListItem>
-    )
+  // 並べ替え変更ハンドラ
+  const handleSortChange = (e) => {
+    const newSort = e.target.value;
+    // ランダム順以外を選択した場合は、通常の並び替えに戻す
+    if (newSort !== "random") {
+      updateSort(newSort);
+    }
   };
 
+  // 再生リストが指定されている場合：既存の動画一覧表示
+  if (playlistId && videosData) {
+    // 関連動画アイテム
+    const renderRow = ({index, style}) => {
+      return (
+        <ListItem
+          disablePadding
+          style={style}
+          sx={{
+            backgroundColor: videosData[index].id === id ? theme.palette.control.dark : theme.palette.control.main,
+            color: videosData[index].id === id ? theme.palette.primary.main : theme.palette.control.contrastText,
+          }}
+        >
+          <WatchVideoPlaylistButton
+            disableRipple
+            onClick={() => {
+              navigateClickVideo(index);
+            }}
+          >
+            <WatchVideoPlaylistIcon
+              component="img"
+              src={`https://i.ytimg.com/vi_webp/${videosData[index].id}/mqdefault.webp`}
+            />
+            <WatchVideoPlaylistTitle>
+              {videosData[index].title}
+            </WatchVideoPlaylistTitle>
+          </WatchVideoPlaylistButton>
+        </ListItem>
+      )
+    };
+
+    return (
+      <WatchVideoPlaylistMain>
+        <WatchVideoPlaylistHeader>
+          <WatchVideoPlaylistHeaderText>
+            <WatchVideoPlaylistHeaderSubText>
+              マイリスト
+            </WatchVideoPlaylistHeaderSubText>
+            <Box>
+              {playlistTitle}
+            </Box>
+          </WatchVideoPlaylistHeaderText>
+        </WatchVideoPlaylistHeader>
+        <StyledPlaylistMenuContainer>
+          <WatchVideoMainPanelMenuContents
+            textAlign="left"
+          >
+            <MenuButtonContainer>
+              <MenuLeftSection>
+                <PlaylistMenuSelect
+                  value={isRandom ? "random" : sort}
+                  onChange={handleSortChange}
+                >
+                  {isRandom ? (
+                    <option value="random">ランダム順</option>
+                  ) : (
+                    <>
+                      <option value="publishDesc">公開日時が新しい順</option>
+                      <option value="publishAsc">公開日時が古い順</option>
+                      <option value="durationDesc">再生時間が長い順</option>
+                      <option value="durationAsc">再生時間が短い順</option>
+                      <option value="titleDesc">タイトル昇順</option>
+                      <option value="titleAsc">タイトル降順</option>
+                    </>
+                  )}
+                </PlaylistMenuSelect>
+              </MenuLeftSection>
+              <MenuRightSection>
+                <Tooltip title="先頭から再生" arrow>
+                  <StyledIconButton
+                    size="small"
+                    onClick={navigateToFirst}
+                  >
+                    <PlayArrowIcon fontSize="small" />
+                  </StyledIconButton>
+                </Tooltip>
+                <Tooltip title="ランダム再生" arrow>
+                  <StyledIconButton
+                    size="small"
+                    onClick={navigateToRandom}
+                  >
+                    <ShuffleIcon fontSize="small" />
+                  </StyledIconButton>
+                </Tooltip>
+              </MenuRightSection>
+            </MenuButtonContainer>
+          </WatchVideoMainPanelMenuContents>
+        </StyledPlaylistMenuContainer>
+        <WatchVideoPlaylistContainer>
+          <AutoSizer>
+            {({ height, width }) => (
+              <FixedSizeList
+                itemCount={videosData ? videosData.length : 0}
+                itemSize={62}
+                height={height}
+                width={width}
+              >
+                {renderRow}
+              </FixedSizeList>
+            )}
+          </AutoSizer>
+        </WatchVideoPlaylistContainer>
+      </WatchVideoPlaylistMain>
+    );
+  }
+
+  // 再生リストが指定されていない場合：現在の動画が含まれる全再生リストを表示
   return (
     <WatchVideoPlaylistMain>
       <WatchVideoPlaylistHeader>
         <WatchVideoPlaylistHeaderText>
           <WatchVideoPlaylistHeaderSubText>
-            マイリスト
+            この動画が含まれる再生リスト
           </WatchVideoPlaylistHeaderSubText>
           <Box>
-            {playlistTitle}
+            {playlistsContainingVideo.length > 0 
+              ? `${playlistsContainingVideo.length}件の再生リスト` 
+              : "再生リストが見つかりませんでした"}
           </Box>
         </WatchVideoPlaylistHeaderText>
       </WatchVideoPlaylistHeader>
       <WatchVideoPlaylistContainer>
-        <AutoSizer>
-          {({ height, width }) => (
-            <FixedSizeList
-              itemCount={videosData ? videosData.length : 0}
-              itemSize={62}
-              height={height}
-              width={width}
-            >
-              {renderRow}
-            </FixedSizeList>
+        <PlaylistListContainer>
+          {playlistsContainingVideo.length === 0 ? (
+            <Box sx={{ padding: "16px", textAlign: "center", color: theme.palette.text.secondary }}>
+              この動画を含む再生リストはありません
+            </Box>
+          ) : (
+            playlistsContainingVideo.map((playlist) => {
+              const firstVideo = playlist.videos?.find(v => v);
+              const updateDate = new Date(playlist.updateAt);
+              const isSelected = playlist.id === playlistId;
+
+              return (
+                <PlaylistCardGroup key={playlist.id}>
+                  <PlaylistCardButton
+                    disableRipple
+                    onClick={() => navigateToPlaylist(playlist.id)}
+                    isSelected={isSelected}
+                  >
+                    <PlaylistCardContent>
+                      {firstVideo && (
+                        <PlaylistCardThumbnail
+                          src={`https://i.ytimg.com/vi_webp/${firstVideo.id}/mqdefault.webp`}
+                          alt=""
+                        />
+                      )}
+                      <PlaylistCardInfo>
+                        <PlaylistCardTitle>
+                          {playlist.title}
+                        </PlaylistCardTitle>
+                        <PlaylistCardMeta>
+                          {playlist.videos?.filter(v => v).length || 0}本の動画 | 最終更新: {format(updateDate, 'yyyy/MM/dd')}
+                        </PlaylistCardMeta>
+                      </PlaylistCardInfo>
+                    </PlaylistCardContent>
+                  </PlaylistCardButton>
+                </PlaylistCardGroup>
+              );
+            })
           )}
-        </AutoSizer>
+        </PlaylistListContainer>
       </WatchVideoPlaylistContainer>
     </WatchVideoPlaylistMain>
-  )
+  );
 });

@@ -2,19 +2,22 @@ import { memo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import styled from "@emotion/styled";
-import { Box, IconButton, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { Box, IconButton, ListItem, ListItemButton, ListItemText, useMediaQuery, useTheme } from "@mui/material";
 import { format, intervalToDuration } from "date-fns";
 import ChatIcon from '@mui/icons-material/Chat';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
-import { isMobile } from "react-device-detect";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 
-import { useLocalStorage } from "../../hooks/useLocalStrage";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
 
 //#region ユーザー定義スタイルコンポーネント
 const VideoListListItem = styled(ListItem)(({ theme }) => ({
-  height: !isMobile ? 108 : 72,
+  [theme.breakpoints.up('md')]: {
+    height: 108,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: 72,
+  },
   '&:hover, &.Mui-selected:hover': {
     "& .MuiListItemButton-root": {
       backgroundColor: theme.palette.control.main,
@@ -26,21 +29,37 @@ const VideoListListItem = styled(ListItem)(({ theme }) => ({
 }));
 
 const VideoListListItemButton = styled(ListItemButton)(({ theme }) => ({
-  height: !isMobile ? 108 : 72,
+  [theme.breakpoints.up('md')]: {
+    height: 108,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: 72,
+  },
   borderStyle: "none",
   padding: 0,
   gap: 16
 }));
 
 const VideoListMedia = styled(Box)(({ theme }) => ({
-  height: !isMobile ? 108 : 72,
+  [theme.breakpoints.up('md')]: {
+    height: 108,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: 72,
+  },
   flexGrow: 0,
   flexShrink: 0
 }));
 
 const VideoListMediaContainer = styled(Box)(({ theme }) => ({
-  width: !isMobile ? 192 : 128,
-  height: !isMobile ? 108 : 72,
+  [theme.breakpoints.up('md')]: {
+    width: 192,
+    height: 108,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: 128,
+    height: 72,
+  },
   display: "inline-block",
   overflow: "hidden",
   position: "relative",
@@ -48,8 +67,14 @@ const VideoListMediaContainer = styled(Box)(({ theme }) => ({
 }));
 
 const VideoListMediaImage = styled(LazyLoadImage)(({ theme }) => ({
-  width: !isMobile ? 192 : 128,
-  height: !isMobile ? 108 : 72,
+  [theme.breakpoints.up('md')]: {
+    width: 192,
+    height: 108,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: 128,
+    height: 72,
+  },
   margin: 0,
   padding: 0,
 }));
@@ -69,7 +94,12 @@ const VideoListMediaText = styled(Box)(({ theme }) => ({
 }));
 
 const VideoListDiscription = styled(Box)(({ theme }) => ({
-  height: !isMobile ? 108 : 72,
+  [theme.breakpoints.up('md')]: {
+    height: 108,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: 72,
+  },
   flex: '1 0 1px',
   minWidth: 0
 }));
@@ -82,6 +112,9 @@ const ChatButton = styled(IconButton)(({ theme }) => ({
 //#endregion
 
 export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, startTime, endTime, duration, comments, listId=null, sort }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   // ルーティング用
   const navigate = useNavigate();
   const chname = useParams().chname;
@@ -107,9 +140,6 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
       return videoDuration[key];
     }
   }).join(':');
-
-  // Josh認証確認
-  const [isJosh] = useLocalStorage('josh', 'false');
 
   const [openDialog, setOpenDialog] = useState(false);
   const handleClickOpen = () => {
@@ -179,30 +209,26 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
           />
         </VideoListDiscription>
       </VideoListListItemButton>
-      {isJosh === 'true' &&
-        <>
-          <ChatButton
-            onClick={handleClickOpen}
-          >
-            {comments ?
-              <ChatIcon
-                fontSize="small"
-              /> :
-              <AppRegistrationIcon
-                fontSize="small"
-                sx={{
-                  color: "primary.main"
-                }}
-              />
-            }
-          </ChatButton>
-          <RegistThreadDialog
-            open={openDialog}
-            onClose={handleClose}
-            youtubeid={videoId}
+      <ChatButton
+        onClick={handleClickOpen}
+      >
+        {comments ?
+          <ChatIcon
+            fontSize="small"
+          /> :
+          <AppRegistrationIcon
+            fontSize="small"
+            sx={{
+              color: "primary.main"
+            }}
           />
-        </>
-      }
+        }
+      </ChatButton>
+      <RegistThreadDialog
+        open={openDialog}
+        onClose={handleClose}
+        youtubeid={videoId}
+      />
     </VideoListListItem>
   )
 });

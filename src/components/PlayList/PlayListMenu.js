@@ -1,9 +1,9 @@
 import { memo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 import styled from "@emotion/styled";
 import { Box } from "@mui/material";
-import queryString from "query-string";
+import { ListSelect } from "../shared/StyledComponents";
+import { useQueryString } from "../../hooks/useQueryString";
 
 //#region ユーザー定義スタイルコンポーネント
 const PlayListMenuMain = styled(Box)(({ theme }) => ({
@@ -16,35 +16,15 @@ const PlayListMenuSelection = styled(Box)(({ theme }) => ({
   flexWrap: "wrap"
 }));
 
-const VideoListSelect = styled("select")(({ theme }) => ({
-  height: 32,
-  width: 194,
-  fontSize: 13,
-  color: theme.palette.control.contrastText,
-  backgroundColor: theme.palette.control.light,
-  border: "2px solid",
-  borderColor: theme.palette.control.dark
-}));
+const VideoListSelect = ListSelect;
 //#endregion
 
 export const PlayListMenu = memo(({ sx, sort }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const query = queryString.parse(location.search);
+  const { updateQuery } = useQueryString();
 
   // ドロップダウン変更イベント
   const handleSelectChange = (e) => {
-    let queryStr = "";
-    query.sort = e.target.value;
-    Object.keys(query).forEach((key, index) => {
-      if (queryStr !== "") queryStr += "&";
-      queryStr += key + "=" + query[key];
-    });
-    navigate({
-      pathname: location.pathname,
-      search: queryStr
-    })
+    updateQuery({ sort: e.target.value });
   };
 
   return (

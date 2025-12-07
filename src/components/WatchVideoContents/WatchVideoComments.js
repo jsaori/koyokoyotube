@@ -4,39 +4,21 @@ import styled from "@emotion/styled";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 import { format } from "date-fns";
-import { Box, IconButton } from "@mui/material";
-import InsertCommentIcon from '@mui/icons-material/InsertComment';
-import CommentsDisabledIcon from '@mui/icons-material/CommentsDisabled';
+import { Box, IconButton, Tooltip } from "@mui/material";
 import DownloadIcon from '@mui/icons-material/Download';
 import FileDownloadOffIcon from '@mui/icons-material/FileDownloadOff';
 import FlagIcon from '@mui/icons-material/Flag';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
+import SettingsIcon from '@mui/icons-material/Settings';
 
-import { useLocalStorage } from "../../hooks/useLocalStrage";
-import { isMobile } from "react-device-detect";
+import { useMediaQuery, useTheme } from "@mui/material";
 import { VideoReportForm } from "../VideoReportForm/VideoReportForm";
 import { RegistThreadDialog } from "../RegistThread/RegistThreadDialog";
-import { Fullscreen, ShowChart } from "@mui/icons-material";
+import { WatchVideoCommentSettingsDialog } from "./WatchVideoCommentSettingsDialog";
+import { Fullscreen } from "@mui/icons-material";
+import { WatchVideoMainPanelMenuContainer, WatchVideoMainPanelMenuContents } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
-const WatchVideoMainPanelMenuContainer = styled(Box)(({ theme }) => ({
-  borderBottom: "1px solid",
-  borderColor: theme.palette.paper.contrastBorder,
-  height: 40,
-  paddingLeft : 16,
-  paddingRight: 8,
-  display: "table",
-  position: "relative",
-  width: "100%"
-}));
-
-const WatchVideoMainPanelMenuContents = styled(Box)(({ theme }) => ({
-  verticalAlign: "middle",
-  boxSizing: "border-box",
-  display: "table-cell",
-  minWidth: 1,
-  position: "relative",
-}));
 
 const WatchVideoCommentHeader = styled(Box)(({ theme }) => ({
   width: "100%",
@@ -62,7 +44,12 @@ const WatchVideoCommentMain = styled(Box)(({ theme }) => ({
   bottom: 0,
   fontSize: 13,
   left: 0,
-  position: !isMobile ? "absolute" : "relative",
+  [theme.breakpoints.up('md')]: {
+    position: "absolute",
+  },
+  [theme.breakpoints.down('md')]: {
+    position: "relative",
+  },
   right: 0,
   top: 40,
   display: "flex",
@@ -73,8 +60,14 @@ const WatchVideoCommentMain = styled(Box)(({ theme }) => ({
 const WatchVideoCommentDisplay = styled(Box)(({ theme }) => ({
   overflowY: "hidden",
   overflowX: "hidden",
-  height: !isMobile ? "100%" : window.screen.height - 500,
-  width: 384,
+  [theme.breakpoints.up('md')]: {
+    height: "100%",
+    width: 384,
+  },
+  [theme.breakpoints.down('md')]: {
+    height: `calc(100vh - 500px)`,
+    width: "100%",
+  },
 }));
 
 const WatchVideoCommentContainer = styled(Box)(({ theme }) => ({
@@ -96,12 +89,17 @@ const WatchVideoCommentBase = styled(Box)(({ theme }) => ({
 
 const CommentTypeSelect = styled("select")(({ theme }) => ({
   height: 24,
-  width: 126,
   fontSize: 13,
   color: theme.palette.control.contrastText,
   backgroundColor: theme.palette.control.light,
   border: "2px solid",
-  borderColor: theme.palette.control.dark
+  borderColor: theme.palette.control.dark,
+  [theme.breakpoints.up('md')]: {
+    width: 126,
+  },
+  [theme.breakpoints.down('md')]: {
+    width: "100%",
+  },
 }));
 
 const CommentIconButton = styled(IconButton)(({ theme }) => ({
@@ -114,9 +112,9 @@ const CommentIconButton = styled(IconButton)(({ theme }) => ({
  * コメントパネル表示部
  * WatchVideoNavigationが長大になってきたので分けた
  */
-export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen }) => {
-  // Josh認証確認
-  const [isJosh] = useLocalStorage('josh', 'false');
+export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleChangeCommentDisp, graphDisp, handleChangeGraphDisp, commentIndex, handleFullscreen, commentColor, commentAlpha, commentSizeScale, setCommentColor, setCommentAlpha, setCommentSizeScale, commentTimeOffset, setCommentTimeOffset }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // コメント自動スクロール設定
   const [autoScroll, setAutoScroll] = useState(true);
@@ -150,27 +148,41 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
     setOpenReportDialog(false);
   };
 
+  // コメント設定ダイアログの表示
+  const [openSettingsDialog, setOpenSettingsDialog] = useState(false);
+  const handleSettingsOpen = () => {
+    setOpenSettingsDialog(true);
+  };
+  const handleSettingsClose = () => {
+    setOpenSettingsDialog(false);
+  };
+
   const renderRow = ({index, style}) => {
+    const comment = thread.data.comments[index];
+    const tooltipTitle = `${comment.body} (${comment.postedAt}) [${comment.userThreadId}] [${comment.userBBSId}]`;
+    
     return (
-      <WatchVideoCommentContainer
-        key={index}
-        style={style}
-      >
-        <WatchVideoCommentBase
-          sx={{
-            width: 370,
-          }}
+      <Tooltip title={tooltipTitle} placement="right" arrow>
+        <WatchVideoCommentContainer
+          key={index}
+          style={style}
         >
-          {thread.data.comments[index].body}
-        </WatchVideoCommentBase>
-        <WatchVideoCommentBase
-          sx={{
-            width: !isMobile ? 120 : 178,
-          }}
-        >
-          {format(thread.data.comments[index].posMs - (60*60*9 * 1000), "HH:mm:ss")}
-        </WatchVideoCommentBase>
-      </WatchVideoCommentContainer>
+          <WatchVideoCommentBase
+            sx={{
+              width: isMobile ? "calc(100% - 178px)" : 360,
+            }}
+          >
+            {comment.body}
+          </WatchVideoCommentBase>
+          <WatchVideoCommentBase
+            sx={{
+              width: isMobile ? 178 : 120,
+            }}
+          >
+            {format(comment.posMs - (60*60*9 * 1000), "HH:mm:ss")}
+          </WatchVideoCommentBase>
+        </WatchVideoCommentContainer>
+      </Tooltip>
     )
   };
 
@@ -188,62 +200,78 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
              * 現状役割の無いselect
              * 表/裏コメントの切替対応を行うかもしれない
              */}
-            {isJosh === "true" && <option value="99">実況コメント</option>}
+            <option value="99">実況コメント</option>
           </CommentTypeSelect>
         </WatchVideoMainPanelMenuContents>
         <WatchVideoMainPanelMenuContents
           textAlign="right"
         >
-          <CommentIconButton
-            disableRipple
-            onClick={handleAutoScroll}
-          >
-            {autoScroll ? <DownloadIcon fontSize="small" /> : <FileDownloadOffIcon fontSize="small" />}
-          </CommentIconButton>
-          <CommentIconButton
-            disableRipple
-            onClick={handleChangeCommentDisp}
-          >
-            {commentDisp ? <InsertCommentIcon fontSize="small" /> : <CommentsDisabledIcon fontSize="small" />}
-          </CommentIconButton>
-          <CommentIconButton
-            disableRipple
-            onClick={handleChangeGraphDisp}
-          >
-            {graphDisp ? <ShowChart fontSize="small" /> : <ShowChart fontSize="small" opacity="0.5" />}
-          </CommentIconButton>
-          <CommentIconButton
-            disableRipple
-            onClick={handleFullscreen.enter}
-          >
-            <Fullscreen fontSize="small" />
-          </CommentIconButton>
-          {isJosh === "true" && (
-            <>
-              <CommentIconButton
-                disableRipple
-                onClick={handleRegistOpen}
-              >
-                <AppRegistrationIcon fontSize="small" />
-              </CommentIconButton>
-              <CommentIconButton
-                disableRipple
-                onClick={handleReportOpen}
-              >
-                <FlagIcon fontSize="small" />
-              </CommentIconButton>
-              <RegistThreadDialog
-                 open={openRegistDialog}
-                 onClose={handleRegistClose}
-                 youtubeid={id}
-              />
-              <VideoReportForm
-                open={openReportDialog}
-                onClose={handleReportClose}
-                youtubeid={id}
-              />
-            </>
-          )}
+          <Tooltip title={autoScroll ? "自動スクロール: ON" : "自動スクロール: OFF"} arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleAutoScroll}
+            >
+              {autoScroll ? <DownloadIcon fontSize="small" /> : <FileDownloadOffIcon fontSize="small" />}
+            </CommentIconButton>
+          </Tooltip>
+          <Tooltip title="コメント表示設定" arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleSettingsOpen}
+            >
+              <SettingsIcon fontSize="small" />
+            </CommentIconButton>
+          </Tooltip>
+          <Tooltip title="フルスクリーン表示" arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleFullscreen.enter}
+            >
+              <Fullscreen fontSize="small" />
+            </CommentIconButton>
+          </Tooltip>
+          <Tooltip title="実況スレを登録" arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleRegistOpen}
+            >
+              <AppRegistrationIcon fontSize="small" />
+            </CommentIconButton>
+          </Tooltip>
+          <Tooltip title="動画を報告" arrow placement="top">
+            <CommentIconButton
+              disableRipple
+              onClick={handleReportOpen}
+            >
+              <FlagIcon fontSize="small" />
+            </CommentIconButton>
+          </Tooltip>
+          <RegistThreadDialog
+             open={openRegistDialog}
+             onClose={handleRegistClose}
+             youtubeid={id}
+          />
+          <VideoReportForm
+            open={openReportDialog}
+            onClose={handleReportClose}
+            youtubeid={id}
+          />
+          <WatchVideoCommentSettingsDialog
+            open={openSettingsDialog}
+            onClose={handleSettingsClose}
+            commentColor={commentColor}
+            commentAlpha={commentAlpha}
+            commentSizeScale={commentSizeScale}
+            setCommentColor={setCommentColor}
+            setCommentAlpha={setCommentAlpha}
+            setCommentSizeScale={setCommentSizeScale}
+            commentDisp={commentDisp}
+            handleChangeCommentDisp={handleChangeCommentDisp}
+            graphDisp={graphDisp}
+            handleChangeGraphDisp={handleChangeGraphDisp}
+            commentTimeOffset={commentTimeOffset}
+            setCommentTimeOffset={setCommentTimeOffset}
+          />
         </WatchVideoMainPanelMenuContents>
       </WatchVideoMainPanelMenuContainer>
       {/**
@@ -256,14 +284,14 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
         <WatchVideoCommentHeader>
           <WatchVideoCommentHeaderContents
             sx={{
-              width: 304,
+              width: isMobile ? "calc(100% - 178px)" : 304,
             }}
           >
             コメント
           </WatchVideoCommentHeaderContents>
           <WatchVideoCommentHeaderContents
             sx={{
-              width: 120,
+              width: isMobile ? 178 : 120,
             }}
           >
             再生時間
@@ -290,4 +318,27 @@ export const WatchVideoComments = memo(({ sx, id, thread, commentDisp, handleCha
       </WatchVideoCommentMain>
     </>
   )
+}, (prevProps, nextProps) => {
+  // graphDisp、handleChangeGraphDisp、設定値の変更を確実に検知する
+  const shouldSkipRender = (
+    prevProps.sx === nextProps.sx &&
+    prevProps.id === nextProps.id &&
+    prevProps.thread === nextProps.thread &&
+    prevProps.commentDisp === nextProps.commentDisp &&
+    prevProps.handleChangeCommentDisp === nextProps.handleChangeCommentDisp &&
+    prevProps.graphDisp === nextProps.graphDisp &&
+    prevProps.handleChangeGraphDisp === nextProps.handleChangeGraphDisp &&
+    prevProps.commentIndex === nextProps.commentIndex &&
+    prevProps.handleFullscreen === nextProps.handleFullscreen &&
+    prevProps.commentColor === nextProps.commentColor &&
+    prevProps.commentAlpha === nextProps.commentAlpha &&
+    prevProps.commentSizeScale === nextProps.commentSizeScale &&
+    prevProps.setCommentColor === nextProps.setCommentColor &&
+    prevProps.setCommentAlpha === nextProps.setCommentAlpha &&
+    prevProps.setCommentSizeScale === nextProps.setCommentSizeScale &&
+    prevProps.commentTimeOffset === nextProps.commentTimeOffset &&
+    prevProps.setCommentTimeOffset === nextProps.setCommentTimeOffset
+  );
+  
+  return shouldSkipRender;
 });

@@ -1,28 +1,37 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import styled from "@emotion/styled";
-import { Box } from "@mui/material";
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 import { useFullScreenHandle } from "react-full-screen";
 
 import { WatchVideoNavigation } from "./WatchVideoNavigation";
 import { WatchVideoPlayer } from "./WatchVideoPlayer";
 import { useFireStorage } from "../../hooks/useFireStorage";
 import { getTimeStamp } from "../../libs/initYoutube";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 
 //#region ユーザー定義スタイルコンポーネント
-const WatchVideoMainContainer = styled(Box)({
-  boxShadow: "0 1px 8px rgb(0 0 0 / 10%)",
+const WatchVideoMainContainer = styled(Box)(({ theme }) => ({
   marginBottom: 16,
   position: "relative",
   display: "flex",
-  flexDirection: "row"
-});
+  [theme.breakpoints.up('md')]: {
+    boxShadow: "0 1px 8px rgb(0 0 0 / 10%)",
+    flexDirection: "row"
+  },
+  [theme.breakpoints.down('md')]: {
+    flexDirection: "column"
+  },
+}));
 //#endregion
 
 /**
- * 動画関連メイン部
+ * 動画関連メイン部（レスポンシブ対応）
  */
 export const WatchVideoMain = memo(({ sx, id }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   // 動画idに紐づくコメントリストを取得
   let thread = useFireStorage(`data/comments/${id}/thread.gz`, null);
   const sortedThread = useMemo(() => {
@@ -34,7 +43,7 @@ export const WatchVideoMain = memo(({ sx, id }) => {
 
   // 動画idに紐づくタイムスタンプを取得
   const [timeStamp, setTimeStamp] = useState([]);
-  useMemo(() => {
+  useEffect(() => {
     const getStamp = async () => {
       const stamp = await getTimeStamp(id);
       setTimeStamp(stamp);
@@ -44,22 +53,30 @@ export const WatchVideoMain = memo(({ sx, id }) => {
 
   // ナビゲーションパネルにコメント非表示ボタンを設置する
   // それにともないナビゲーションパネルにおける変更をここで検知しプレイヤーにわたす必要がある
-  const [commentDisp, setCommentDisp] = useState(true);
-  const handleChangeCommentDisp = () => {
-    setCommentDisp(!commentDisp);
-  };
-  // コメントグラフ表示ボタン
+  const [commentDisp, setCommentDisp] = useLocalStorage('commentDisp', true);
+  const handleChangeCommentDisp = useCallback(() => {
+    setCommentDisp(prev => !prev);
+  }, [setCommentDisp]);
+  // コメントグラフ表示ボタン（デスクトップのみ）
   // デフォルトは非表示にしておく
-  const [graphDisp, setGraphDisp] = useState(false);
-  const handleChangeGraphDisp = () => {
-    setGraphDisp(!graphDisp);
-  };
+  const [graphDisp, setGraphDisp] = useLocalStorage('graphDisp', false);
+  const handleChangeGraphDisp = useCallback(() => {
+    setGraphDisp(prev => !prev);
+  }, [setGraphDisp]);
 
   // 流れたコメントのインデックスを管理しコメントリストを動作させる
   const [commentIndex, setCommentIndex] = useState(0);
-  const handleCommentIndex = (index) => {
+  const handleCommentIndex = useCallback((index) => {
     setCommentIndex(index);
-  };
+  }, []);
+
+  // コメント表示設定（色、透明度、サイズ倍率）
+  const [commentColor, setCommentColor] = useLocalStorage('commentColor', '#ffffff');
+  const [commentAlpha, setCommentAlpha] = useLocalStorage('commentAlpha', 1.0);
+  const [commentSizeScale, setCommentSizeScale] = useLocalStorage('commentSizeScale', 1.0);
+
+  // コメント時間調整（一時的な設定、保存不要）
+  const [commentTimeOffset, setCommentTimeOffset] = useState(0);
 
   const handleFullscreen = useFullScreenHandle();
 
@@ -68,11 +85,11 @@ export const WatchVideoMain = memo(({ sx, id }) => {
       {/**
        * プレイヤー & メディア表示
        */}
-      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} graphDisp={graphDisp} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} />
+      <WatchVideoPlayer id={id} thread={sortedThread} commentDisp={commentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleCommentIndex={handleCommentIndex} handleFullscreen={handleFullscreen} commentColor={commentColor} commentAlpha={commentAlpha} commentSizeScale={commentSizeScale} commentTimeOffset={commentTimeOffset} />
       {/**
        * ナビゲーションパネル
        */}
-      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} graphDisp={graphDisp} handleChangeGraphDisp={handleChangeGraphDisp} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} />
+      <WatchVideoNavigation id={id} thread={sortedThread} commentDisp={commentDisp} handleChangeCommentDisp={handleChangeCommentDisp} graphDisp={!isMobile ? graphDisp : undefined} handleChangeGraphDisp={!isMobile ? handleChangeGraphDisp : undefined} commentIndex={commentIndex} timeStamp={timeStamp} handleFullscreen={handleFullscreen} commentColor={commentColor} commentAlpha={commentAlpha} commentSizeScale={commentSizeScale} setCommentColor={setCommentColor} setCommentAlpha={setCommentAlpha} setCommentSizeScale={setCommentSizeScale} commentTimeOffset={commentTimeOffset} setCommentTimeOffset={setCommentTimeOffset} />
     </WatchVideoMainContainer>
   )
 });

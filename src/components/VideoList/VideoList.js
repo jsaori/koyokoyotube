@@ -1,16 +1,18 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import { Box, Divider, List } from "@mui/material";
+import { Box, Divider, List, useMediaQuery, useTheme } from "@mui/material";
 import { VideoListFooter } from "./VideoListFooter";
 import { VideoListItem } from "./VideoListItem";
 import { VideoListMenu } from "./VideoListMenu";
-import { isMobile } from "react-device-detect";
+import { createSortFunction } from "../../libs/utilities";
 
 /**
  * 動画一覧
  */
 export const VideoList = memo(({ sx, videoData }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
   const [page, setPage] = useState(0);
   const query = useMemo(() => {
@@ -25,13 +27,32 @@ export const VideoList = memo(({ sx, videoData }) => {
     window.scrollTo(0, 0);
   }, [query]);
 
-  const [searchList, setSearchList] = useState(null);
-  useEffect(() => {
+  const searchList = useMemo(() => {
     const search = query.get('search_query') !== null ? query.get('search_query') : "";
-    setSearchList(videoData.filter((video) => {
+    // 空欄の場合は全件表示
+    if (search === "") {
+      // IDで重複排除（最初に出現したIDのみを保持）
+      const uniqueMap = new Map();
+      videoData.forEach((video) => {
+        if (!uniqueMap.has(video.id)) {
+          uniqueMap.set(video.id, video);
+        }
+      });
+      return Array.from(uniqueMap.values());
+    }
+    // 検索クエリがある場合はフィルタリング
+    const filtered = videoData.filter((video) => {
       const reg = new RegExp(search, 'i');
       return (reg.test(video.title));
-    }));
+    });
+    // IDで重複排除（最初に出現したIDのみを保持）
+    const uniqueMap = new Map();
+    filtered.forEach((video) => {
+      if (!uniqueMap.has(video.id)) {
+        uniqueMap.set(video.id, video);
+      }
+    });
+    return Array.from(uniqueMap.values());
   }, [query, videoData]);
 
   const [sort, setSort] = useState("publishDesc");
@@ -44,25 +65,12 @@ export const VideoList = memo(({ sx, videoData }) => {
     }
   }, [query]);
 
-  const sortChange = useCallback((prev, current) => {
-    let comparison = 0;
-    if (sort === "publishDesc") {
-      comparison = new Date(current.publishedAt) - new Date(prev.publishedAt);
-    } else if (sort === "publishAsc") {
-      comparison = new Date(prev.publishedAt) - new Date(current.publishedAt);
-    } else if (sort === "durationDesc") {
-      comparison = Number(current.duration) - Number(prev.duration);
-    } else if (sort === "durationAsc") {
-      comparison = Number(prev.duration) - Number(current.duration);
-    } else if (sort === "titleDesc") {
-      comparison = current.title < prev.title ? 1 : -1;
-    } else if (sort === "titleAsc") {
-      comparison = prev.title < current.title ? 1 : -1;
-    } else {
-      comparison = 0;
-    }
-    return comparison;
-  }, [sort]);
+  const sortChange = useMemo(() => createSortFunction(sort), [sort]);
+
+  const sortedAndPaginatedVideos = useMemo(() => {
+    if (!searchList) return [];
+    return [...searchList].sort(sortChange).slice((page - 1) * 50, page * 50);
+  }, [searchList, sortChange, page]);
 
   return (
     <Box {...sx}>
@@ -102,9 +110,9 @@ export const VideoList = memo(({ sx, videoData }) => {
                 {/**
                  * コンテンツリスト
                  */}
-                {searchList.sort(sortChange).slice((page - 1) * 50, page * 50).map((video, index) => (
+                {sortedAndPaginatedVideos.map((video, index, array) => (
                   <Box
-                    key={index}
+                    key={video.id}
                   >
                     <VideoListItem
                       videoId={video.id}
@@ -115,10 +123,10 @@ export const VideoList = memo(({ sx, videoData }) => {
                       duration={video.duration}
                       comments={video.comments}
                       sx={{
-                        mb: searchList.length - 1 === index ? 4 : 0
+                        mb: array.length - 1 === index ? 4 : 0
                       }}
                     />
-                    {searchList.length - 1 > index && <Divider sx={{ pt: !isMobile ? 2 : 0.5, mb: !isMobile ? 2 : 0.5 }} />}
+                    {array.length - 1 > index && <Divider sx={{ pt: !isMobile ? 2 : 0.5, mb: !isMobile ? 2 : 0.5 }} />}
                   </Box>
                 ))}
               </List>

@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 
 import { Box, createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 
-import { useLocalStorage } from "../../hooks/useLocalStrage";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
 import Header from "../Header/Header";
 
 export const ColorModeContext = createContext({ toggleColorMode: () => {} });

@@ -1,16 +1,21 @@
 import { memo, useState } from "react";
 
-import { Button, Dialog, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Link, Radio, RadioGroup, Snackbar } from "@mui/material";
-import styled from "@emotion/styled";
+import { Dialog, DialogContent, DialogContentText, DialogTitle, FormControlLabel, Link, Radio, RadioGroup, Snackbar } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useUpdateRealtimeDB } from "../../hooks/useRealtimeDB";
+import { FormCommitButton } from "../shared/StyledComponents";
 
-const CommitButton = styled(Button)((theme) => ({
-  marginTop: 16,
-  width: 70
-}));
+const CommitButton = FormCommitButton;
+
+// 一意のIDを生成
+function createUuid(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(a) {
+      let r = (new Date().getTime() + Math.random() * 16)%16 | 0, v = a === 'x' ? r : ((r & 0x3) | 0x8);
+      return v.toString(16);
+   });
+}
 
 export const VideoReportForm = memo((props) => {
   const {onClose, open, youtubeid} = props;
@@ -112,11 +117,3 @@ export const VideoReportForm = memo((props) => {
     </>
   )
 });
-
-// 一意のIDを生成
-function createUuid(){
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(a) {
-      let r = (new Date().getTime() + Math.random() * 16)%16 | 0, v = a === 'x' ? r : ((r & 0x3) | 0x8);
-      return v.toString(16);
-   });
-}

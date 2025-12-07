@@ -1,96 +1,42 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { Box } from "@mui/material";
-import styled from "@emotion/styled";
+import { useMediaQuery, useTheme } from "@mui/material";
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import useMeasure from "react-use-measure";
-import Konva from "konva";
-import { Layer, Stage, Text } from "react-konva";
+import { Layer, Stage } from "react-konva";
 import { useLocation } from "react-router-dom";
 import { FullScreen } from "react-full-screen";
-import { AreaChart, Area, XAxis, ResponsiveContainer } from 'recharts';
 
 import { YoutubePlayer } from "../YoutubePlayer/YoutubePlayer";
 import { useYoutubePlayer } from "../../hooks/useYoutubePlayer";
 import { useStreamComments } from "../../hooks/useStreamComments";
 import { usePlayingVideo } from "../../hooks/usePlayingVideo";
+import {
+  WatchVideoMainPlayerContainer,
+  WatchVideoMainPlayer,
+  WatchVideoMainPlayerLayer,
+  FullscreenExitButton,
+  WatchVideoMediaBox,
+} from "./WatchVideoPlayer.styles";
+import { CommentText } from "./CommentText";
+import { useCommentCountGraph, CommentCountGraph } from "./CommentCountGraph";
+import { WatchVideoMediaList } from "./WatchVideoMediaList";
+import { EnlargedImageDialog } from "./EnlargedImageDialog";
 
-//#region ユーザー定義スタイルコンポーネント
-const WatchVideoMainPlayerContainer = styled(Box)(({ theme }) => ({
-  width: "calc(100% - 384px)",
-  minWidth: 640,
-  backgroundColor: "black",
-  display: "flex",
-  flexDirection: "column"
-}));
-
-const WatchVideoMainPlayer = styled(Box)(({ theme }) => ({
-  backgroundColor: "black",
-  aspectRatio: "640/360",
-  overflow: "hidden",
-  position: "relative",
-}));
-
-const WatchVideoMainPlayerLayer = styled(Box)(({ theme }) => ({
-  position: "absolute",
-  width: "100%",
-  height: "100%",
-}));
-
-const WatchVideoMediaBox = styled(Box)(({ theme }) => ({
-  background: theme.palette.control.light,
-  height: 80,
-  overflow: "hidden",
-  position: "relative",
-  width: "100%",
-  borderRight: "1px solid",
-  borderColor: theme.palette.paper.contrastBorder,
-  display: "flex",
-  justifyContent: "space-between",
-}));
-//#endregion
-
-// コメントコンポーネント
-const DURATION_SECONDS = 5;
-const CommentText = (props) => {
-  const commentRef = useRef(null);
-  const tweenRef = useRef(null);
-  useEffect(() => {
-    tweenRef.current = new Konva.Tween({
-      node: commentRef.current,
-      x: -commentRef.current.textWidth,
-      duration: DURATION_SECONDS,
-      onFinish: () => {
-        if (commentRef.current) commentRef.current.destroy();
-      }
-    });
-  }, [commentRef]);
-
-  useEffect(() => {
-    if (tweenRef === null) return;
-    props.isPlaying ? tweenRef.current.play() : tweenRef.current.pause();
-  }, [props.isPlaying, tweenRef]);
-
-  return (
-    <Text
-      ref={commentRef}
-      text={props.text}
-      x={props.x}
-      y={props.y}
-      fontSize={props.fontSize}
-      fontStyle={props.fontStyle}
-      fill="white"
-      stroke="black"
-      strokeWidth={1}
-      lineHeight={props.line === 1 ? 1 : 1.35}
-      visible={props.visible}
-    />
-  )
-}
+// メディアリストの表示制御
+// Firestoreから画像を取得して表示
+const ENABLE_MEDIA_LIST = true;
 
 /**
- * 動画の再生および流れるコメントの表示を行う
+ * 動画の再生および流れるコメントの表示を行う（レスポンシブ対応）
  */
-export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, handleCommentIndex, handleFullscreen }) => {
+export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, handleCommentIndex, handleFullscreen, commentColor = '#ffffff', commentAlpha = 1.0, commentSizeScale = 1.0, commentTimeOffset = 0 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // フルスクリーン状態を検知
+  const isFullscreen = handleFullscreen?.active || false;
+  
   // Youtubeプレイヤーロード
   const { playerInstance, ...ytPlayerProps } = useYoutubePlayer({
     mountId: 'youtubeplayer',
@@ -114,7 +60,7 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
   const navigateNextVideoRef = useRef();
   navigateNextVideoRef.current = navigateNextVideo;
 
-  // コメント数グラフの計算のため動画の再生時間を取得
+  // コメント数グラフの計算のため動画の再生時間を取得（デスクトップのみ）
   const [videoLength, setVideoLength] = useState(0);
 
   // Youtubeプレイヤー状態変化コールバック
@@ -127,7 +73,10 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     } else if (event.data === window.YT.PlayerState.PLAYING) {
       // 再生中
       setPlaying(true);
-      setVideoLength(event.target.getDuration());
+      // コメントグラフ用に動画の再生時間を取得（デスクトップのみ）
+      if (!isMobile && graphDisp) {
+        setVideoLength(event.target.getDuration());
+      }
     } else if (event.data === window.YT.PlayerState.PAUSED) {
       // 停止
       setPlaying(false);
@@ -138,7 +87,7 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     } else {
       // 未開始
     }
-  }, []);
+  }, [isMobile, graphDisp]);
 
   // Youtubeプレイヤーイベントリスナー
   useEffect(() => {
@@ -186,45 +135,48 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     resetStreamComments();
   }, [id, resetStreamComments]);
 
+  // 時間調整オフセット変更時にコメントをリセットして同期
+  useEffect(() => {
+    resetStreamComments();
+  }, [commentTimeOffset, resetStreamComments]);
+
   // コメント生成処理
   useEffect(() => {
-    // 再生時間から流すべきコメントを生成
-    setStreamComments(currentMS);
+    // 再生時間から流すべきコメントを生成（時間調整オフセットを適用）
+    // commentTimeOffsetは秒単位なので、ミリ秒に変換して加算
+    const adjustedMS = currentMS + (commentTimeOffset * 1000);
+    setStreamComments(adjustedMS);
     // 現在の最新のコメントNoを設定
     handleCommentIndex(commentNo);
-  }, [currentMS, commentNo, handleCommentIndex, setStreamComments]);
+  }, [currentMS, commentNo, handleCommentIndex, setStreamComments, commentTimeOffset]);
 
   // React-Konvaによるcanvas描画はpixel指定しかできないため可変ウィンドウ対応が必要
   // useMeasureのrefを親要素に指定することでboundsに親のwidth/heightがpixelで入る
   const [ref, bounds] = useMeasure();
 
-  // コメントされた時間をインターバルで区切ってコメント数を算出する
-  const SEEK_BAR_MARGIN = 12;
-  const [commentsCount, setCommentsCount] = useState([]);
-  useEffect(() => {
-    if (thread && bounds && videoLength > 0) {
-      // 動画再生時間を超えたコメントは切り捨てる
-      const filteredComments = thread.data.comments.filter(c => c.posMs / 1000 <= videoLength);
+  // コメント数グラフのデータを計算
+  const commentsCount = useCommentCountGraph(thread, bounds, videoLength, isMobile, graphDisp);
 
-      // インターバル数はシークバーの width に揃える
-      const intervalCount = bounds.width - SEEK_BAR_MARGIN * 2;
+  // 画像拡大表示用の状態管理
+  const [enlargedImageMedia, setEnlargedImageMedia] = useState(null);
 
-      // インターバルは再生時間をインターバル数で分割する
-      const interval = videoLength / intervalCount;
-
-      // インターバルの配列を生成
-      const intervals = Array.from({length: Math.ceil(videoLength / interval)}, (_, i) => i * interval);
-
-      // インターバルごとにコメント数を算出する
-      const commentsCount = intervals.map(intervalStart => {
-        return {
-          time: intervalStart,
-          count: filteredComments.filter(c => c.posMs / 1000 >= intervalStart && c.posMs / 1000 < intervalStart + interval).length
-        }
+  // 画像クリック時のハンドラー（mediaオブジェクトを受け取る）
+  const handleImageClick = useCallback((media) => {
+    if (typeof media === 'string') {
+      // 後方互換性: 文字列の場合はsrcとして扱う
+      setEnlargedImageMedia({
+        src: media,
+        videoId: id,
+        id: null,
       });
-      setCommentsCount(commentsCount);
+    } else {
+      // mediaオブジェクトの場合
+      setEnlargedImageMedia({
+        ...media,
+        videoId: id,
+      });
     }
-  }, [thread, bounds, videoLength]);
+  }, [id]);
 
   return (
     <WatchVideoMainPlayerContainer>
@@ -234,7 +186,18 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
       <FullScreen
         handle={handleFullscreen}
       >
-        <WatchVideoMainPlayer>
+        <WatchVideoMainPlayer isFullscreen={isFullscreen}>
+          {/**
+           * フルスクリーン解除ボタン（スマホのみ）
+           */}
+          {isFullscreen && isMobile && (
+            <FullscreenExitButton
+              onClick={handleFullscreen.exit}
+              aria-label="フルスクリーンを終了"
+            >
+              <FullscreenExitIcon />
+            </FullscreenExitButton>
+          )}
           {/**
            * コメントレンダラ
            */}
@@ -261,38 +224,28 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
                     text={comment.text}
                     x={bounds.width}
                     y={bounds.height / 11 * (comment.lane) + 10}
-                    fontSize={bounds.height / 15}
+                    fontSize={bounds.height / 15 * commentSizeScale}
                     fontStyle="700"
                     isPlaying={isPlaying}
                     line={comment.line}
                     visible={commentDisp}
+                    isMobile={isMobile}
+                    fill={commentColor}
+                    opacity={commentAlpha}
                   />
                 ))}
               </Layer>
             </Stage>
           </WatchVideoMainPlayerLayer>
-          <WatchVideoMainPlayerLayer
-          zIndex={2}
-          sx={{
-            pointerEvents: "none"
-          }}
-          >
           {/**
-           * コメント数グラフ
+           * コメント数グラフ（デスクトップのみ）
            */}
-          { graphDisp &&
-            <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  width={bounds.width - SEEK_BAR_MARGIN * 2}
-                  height={bounds.height}
-                  data={commentsCount}
-                  margin={{top: bounds.height * 3 / 4, bottom: 45, left: SEEK_BAR_MARGIN, right: SEEK_BAR_MARGIN}}
-                >
-                  <XAxis dataKey="time" hide={true} />
-                  <Area type="monotone" dataKey="count" stroke="#ffacd3" fill="#ffacd3" />
-                </AreaChart>
-            </ResponsiveContainer>}
-          </WatchVideoMainPlayerLayer>
+          <CommentCountGraph
+            bounds={bounds}
+            commentsCount={commentsCount}
+            isMobile={isMobile}
+            graphDisp={graphDisp}
+          />
           {/**
            * ビデオレンダラ
            */}
@@ -304,13 +257,50 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
         </WatchVideoMainPlayer>
       </FullScreen>
       {/**
-       * 何かに使うかもしれない枠
+       * 何かに使うかもしれない枠（デスクトップのみ）
        * 絵師の画像一覧 or コメント投稿欄
-       *
+       * 一時的に内容のみ非表示（ENABLE_MEDIA_LISTで制御）
        */}
-      <WatchVideoMediaBox>
-
-      </WatchVideoMediaBox>
+      {!isMobile && (
+        <WatchVideoMediaBox>
+          {ENABLE_MEDIA_LIST && (
+            <WatchVideoMediaList
+              thread={thread}
+              currentMS={currentMS}
+              commentTimeOffset={commentTimeOffset}
+              id={id}
+              isMobile={isMobile}
+              onImageClick={handleImageClick}
+            />
+          )}
+        </WatchVideoMediaBox>
+      )}
+      {/**
+       * 画像拡大表示Dialog
+       */}
+      <EnlargedImageDialog
+        media={enlargedImageMedia}
+        onClose={() => {
+          setEnlargedImageMedia(null);
+        }}
+      />
     </WatchVideoMainPlayerContainer>
   )
+}, (prevProps, nextProps) => {
+  // graphDisp、commentAlpha、commentSizeScaleの変更を確実に検知する
+  const shouldSkipRender = (
+    prevProps.sx === nextProps.sx &&
+    prevProps.id === nextProps.id &&
+    prevProps.thread === nextProps.thread &&
+    prevProps.commentDisp === nextProps.commentDisp &&
+    prevProps.graphDisp === nextProps.graphDisp &&
+    prevProps.handleCommentIndex === nextProps.handleCommentIndex &&
+    prevProps.handleFullscreen === nextProps.handleFullscreen &&
+    prevProps.commentColor === nextProps.commentColor &&
+    prevProps.commentAlpha === nextProps.commentAlpha &&
+    prevProps.commentSizeScale === nextProps.commentSizeScale &&
+    prevProps.commentTimeOffset === nextProps.commentTimeOffset
+  );
+  
+  return shouldSkipRender;
 });
