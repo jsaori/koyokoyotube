@@ -155,7 +155,10 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   const [sending, updateThreadData] = useUpdateRealtimeDB();
   const [openSnack, setOpenSnack] = useState(false);
   const [snackMessage, setSnackMessage] = useState("入力が送信されました");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
     // 編集されたスレッドのバリデーション
     const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
     for (const thread of editedThreadsMap.values()) {
@@ -220,6 +223,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
         console.error("Failed to update Realtime Database:", error);
         setSnackMessage("送信に失敗しました");
         setOpenSnack(true);
+        setIsSubmitting(false);
         return;
       }
     }
@@ -235,8 +239,12 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
     setEditableThreadIndices(new Set());
     setEditedThreadsMap(new Map());
     setDeletedThreadIndices(new Set());
+    
+    // タイトルもクリア
+    setTitle("");
 
     setOpenSnack(true);
+    setIsSubmitting(false);
   };
 
   const handleCloseSnack = () => {
@@ -307,12 +315,14 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   useEffect(() => {
     if (watchYoutubeURL === "") {
       setYoutubeId("");
+      setTitle("");
       return;
     }
     const youtubeMatch = watchYoutubeURL.match(/(youtube\.com|youtu\.be)?(.+\?v=|\/)([a-zA-Z0-9\-_]{11})($|[&,?])/);
     const youtubeid = youtubeMatch?.find((v) => v?.length === 11);
     if (!youtubeMatch?.find((v) => v?.match(/(youtube|youtu.be)/)) || !youtubeid) {
       setYoutubeId("");
+      setTitle("");
       return;
     }
     setYoutubeId(youtubeid);
@@ -321,7 +331,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   // Youtube動画IDに紐付く実況情報を取得
   const [registeredData, getRegisteredData, resetRegisteredData] = useGetRealtimeDB({threads: []});
   useEffect(() => {
-    if (sending) return;
+    if (sending || isSubmitting) return;
     // 動画Id未登録なら情報リセット
     if (youtubeId === "") {
       resetRegisteredData({threads: []});
@@ -329,7 +339,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
       // 動画Idから実況情報問い合せ
       getRegisteredData(`/thread/${youtubeId}`, {threads: []});
     }
-  }, [youtubeId, getRegisteredData, resetRegisteredData, sending]);
+  }, [youtubeId, getRegisteredData, resetRegisteredData, sending, isSubmitting]);
 
   // 実況情報更新時に設定される
   useEffect(() => {
@@ -391,7 +401,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
             label="Youtube URL"
             variant="standard"
             type="url"
-            disabled={defaultYoutubeURL !== ""}
+            disabled={defaultYoutubeURL !== "" || sending || isSubmitting}
             // youtubeurlは必須
             {...register("youtubeurl", {
               required: true
@@ -407,7 +417,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
             render={({ field }) => (
               <FormControlLabel
                 label="同時視聴"
-                disabled={registeredData.threads.length > 0}
+                disabled={registeredData.threads.length > 0 || sending || isSubmitting}
                 control={
                   <Checkbox
                     {...field}
@@ -422,7 +432,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
               label="開始時間"
               type="datetime-local"
               variant="standard"
-              disabled={registeredData.threads.length > 0}
+              disabled={registeredData.threads.length > 0 || sending || isSubmitting}
               sx={{ width: 250, ml: 3 }}
               InputLabelProps={{
                 shrink: true,
@@ -446,7 +456,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
             >
               <IconButton
                 onClick={() => handleToggleEdit(index)}
-                disabled={isDeleted}
+                disabled={isDeleted || sending || isSubmitting}
               >
                 {isEditable ? <LockOpenIcon /> : <LockIcon />}
               </IconButton>
@@ -455,9 +465,9 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
                 variant="standard"
                 value={displayUrl}
                 type="url"
-                disabled={!isEditable || isDeleted}
+                disabled={!isEditable || isDeleted || sending || isSubmitting}
                 InputProps={{
-                  readOnly: !isEditable || isDeleted,
+                  readOnly: !isEditable || isDeleted || sending || isSubmitting,
                 }}
                 sx={{
                   ...(isDeleted && {
@@ -542,6 +552,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
               <IconButton
                 onClick={() => handleToggleDelete(index)}
                 color={isDeleted ? "error" : "default"}
+                disabled={sending || isSubmitting}
               >
                 <DeleteIcon />
               </IconButton>
@@ -558,6 +569,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
               >
                 <IconButton
                   onClick={() => remove(index)}
+                  disabled={sending || isSubmitting}
                 >
                   <ClearIcon />
                 </IconButton>
@@ -565,6 +577,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
                   label={`実況スレ URL${threadNumber}`}
                   variant="standard"
                   type="url"
+                  disabled={sending || isSubmitting}
                   // threadurlは必須
                   {...register(`threads.${index}.url`, {
                     required: true
@@ -579,6 +592,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
         <Button
           disableRipple
           onClick={() => append(blankThread)}
+          disabled={sending || isSubmitting}
         >
           <AddIcon />
         </Button>
@@ -595,6 +609,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
         variant="contained"
         disableElevation
         onClick={handleSubmit(onSubmit)}
+        disabled={sending || isSubmitting}
       >
         送信
       </CommitButton>
@@ -602,7 +617,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1
         }}
-        open={sending}
+        open={sending || isSubmitting}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
