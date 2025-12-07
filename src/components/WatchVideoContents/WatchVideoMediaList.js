@@ -9,18 +9,18 @@ import {
   WatchVideoMediaArrowLeft,
   WatchVideoMediaArrowRight,
 } from "./WatchVideoPlayer.styles";
+import { useFirestoreMedia } from "../../hooks/useFirestoreMedia";
+import { MediaReportDialog } from "./MediaReportDialog";
 
 /**
  * 画像一覧表示のロジックを管理するカスタムフック
  */
-export const useMediaList = (thread, currentMS, commentTimeOffset, id, onImageClick) => {
+export const useMediaList = (media, id, onImageClick) => {
   const mediaScrollContainerRef = useRef(null);
   const [loadedImages, setLoadedImages] = useState(new Set());
   const [failedImages, setFailedImages] = useState(new Set());
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(-1);
-  const prevMediaIndexRef = useRef(-1);
   const scrollIntervalRef = useRef(null);
   const isManualScrollingRef = useRef(false);
 
@@ -43,19 +43,17 @@ export const useMediaList = (thread, currentMS, commentTimeOffset, id, onImageCl
   useEffect(() => {
     setLoadedImages(new Set());
     setFailedImages(new Set());
-    setCurrentMediaIndex(-1);
-    prevMediaIndexRef.current = -1;
   }, [id]);
 
   // 有効な画像のみをフィルタリング（読み込み失敗した画像は除外、重複URLはすべて除外）
   const validMedia = useMemo(() => {
-    if (!thread?.data?.media) return [];
+    if (!media || media.length === 0) return [];
     
     // まず、各URLの出現回数をカウント
     const urlCount = new Map();
-    thread.data.media.forEach(media => {
-      if (media?.src && media.src.trim() !== '') {
-        urlCount.set(media.src, (urlCount.get(media.src) || 0) + 1);
+    media.forEach(item => {
+      if (item?.src && item.src.trim() !== '') {
+        urlCount.set(item.src, (urlCount.get(item.src) || 0) + 1);
       }
     });
     
@@ -67,70 +65,17 @@ export const useMediaList = (thread, currentMS, commentTimeOffset, id, onImageCl
       }
     });
     
-    return thread.data.media.filter(media => {
+    return media.filter(item => {
       // srcが存在し、空文字列でないことを確認
-      if (!media?.src || media.src.trim() === '') return false;
+      if (!item?.src || item.src.trim() === '') return false;
       // 読み込みに失敗した画像は除外
-      if (failedImages.has(media.src)) return false;
+      if (failedImages.has(item.src)) return false;
       // 重複URL（2回以上出現）はすべて除外
-      if (duplicateUrls.has(media.src)) return false;
+      if (duplicateUrls.has(item.src)) return false;
       // imgur.comの「no longer available」エラー画像は読み込み時に除外されるため、ここでは除外しない
       return true;
     });
-  }, [thread?.data?.media, failedImages]);
-
-  // 現在の再生時刻に対応する画像インデックスを更新
-  useEffect(() => {
-    if (validMedia.length === 0) return;
-
-    const adjustedMS = currentMS + (commentTimeOffset * 1000);
-    
-    // 読み込み成功した画像のみを対象とする
-    const loadedMedia = validMedia.filter(media => loadedImages.has(media.src));
-    if (loadedMedia.length === 0) return;
-    
-    // 現在の再生時刻に対応する画像を探す
-    const newMediaIndex = loadedMedia.findIndex(media => {
-      const mediaPosMs = Number(media.posMs) || 0;
-      return mediaPosMs >= adjustedMS;
-    });
-
-    // 画像インデックスが変更された場合のみ更新
-    if (newMediaIndex !== currentMediaIndex) {
-      setCurrentMediaIndex(newMediaIndex);
-    }
-  }, [currentMS, validMedia, loadedImages, commentTimeOffset, currentMediaIndex]);
-
-  // 自動スクロール機能（画像インデックスが変更されたときのみスクロール）
-  useEffect(() => {
-    if (!mediaScrollContainerRef.current || currentMediaIndex === -1) return;
-    // 手動スクロール中は自動スクロールを無効化
-    if (isManualScrollingRef.current) return;
-
-    const container = mediaScrollContainerRef.current;
-    
-    // 読み込み成功した画像のみを対象とする
-    const loadedMedia = validMedia.filter(media => loadedImages.has(media.src));
-    if (loadedMedia.length === 0) return;
-
-    // 画像インデックスが変更された場合のみスクロール
-    if (currentMediaIndex !== prevMediaIndexRef.current) {
-      const targetMedia = loadedMedia[currentMediaIndex];
-      if (targetMedia) {
-        const targetItem = container.querySelector(`[data-posms="${targetMedia.posMs}"]`);
-        if (targetItem) {
-          targetItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
-      } else {
-        // 最後の画像より後ろの場合は最後の画像にスクロール
-        const lastItem = container.querySelector(`[data-posms="${loadedMedia[loadedMedia.length - 1].posMs}"]`);
-        if (lastItem) {
-          lastItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'end' });
-        }
-      }
-      prevMediaIndexRef.current = currentMediaIndex;
-    }
-  }, [currentMediaIndex, validMedia, loadedImages]);
+  }, [media, failedImages]);
 
   // スクロール位置を監視して矢印ボタンの表示を制御
   const checkScrollPosition = useCallback(() => {
@@ -240,6 +185,13 @@ export const WatchVideoMediaList = ({
   isMobile,
   onImageClick 
 }) => {
+  // Firestoreから画像を取得
+  const { media: firestoreMedia } = useFirestoreMedia(id);
+  
+  // 報告ダイアログの状態管理
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
+  
   const {
     mediaScrollContainerRef,
     validMedia,
@@ -251,7 +203,18 @@ export const WatchVideoMediaList = ({
     startScrollingLeft,
     startScrollingRight,
     stopScrolling,
-  } = useMediaList(thread, currentMS, commentTimeOffset, id, onImageClick);
+  } = useMediaList(firestoreMedia, id, onImageClick);
+
+  // 右クリックで報告ダイアログを開く
+  const handleContextMenu = useCallback((e, media) => {
+    e.preventDefault();
+    setReportTarget({
+      videoId: id,
+      mediaId: media.id,
+      imageSrc: media.src,
+    });
+    setReportDialogOpen(true);
+  }, [id]);
 
   if (isMobile) return null;
 
@@ -265,17 +228,15 @@ export const WatchVideoMediaList = ({
               if (loadedImages.has(media.src)) {
                 const posMs = Number(media.posMs) || 0;
                 const timeString = format(posMs - (60*60*9 * 1000), "HH:mm:ss");
-                const tooltipTitle = media.postedAt 
-                  ? `${timeString}（${media.postedAt}）`
-                  : timeString;
                 return (
-                  <Tooltip key={`${media.src}-${index}`} title={tooltipTitle} placement="top" arrow>
+                  <Tooltip key={`${media.src}-${index}`} title={timeString} placement="top" arrow>
                     <WatchVideoMediaItem data-posms={media.posMs}>
                       <img
                         src={media.src}
                         alt={`Media at ${media.posMs}ms`}
                         onError={() => handleImageError(media.src)}
-                        onClick={() => onImageClick(media.src)}
+                        onClick={() => onImageClick(media)}
+                        onContextMenu={(e) => handleContextMenu(e, media)}
                       />
                     </WatchVideoMediaItem>
                   </Tooltip>
@@ -316,6 +277,13 @@ export const WatchVideoMediaList = ({
           )}
         </>
       )}
+      <MediaReportDialog
+        open={reportDialogOpen}
+        onClose={() => setReportDialogOpen(false)}
+        videoId={reportTarget?.videoId}
+        mediaId={reportTarget?.mediaId}
+        imageSrc={reportTarget?.imageSrc}
+      />
     </>
   );
 };

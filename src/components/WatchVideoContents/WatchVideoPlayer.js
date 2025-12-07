@@ -23,9 +23,9 @@ import { useCommentCountGraph, CommentCountGraph } from "./CommentCountGraph";
 import { WatchVideoMediaList } from "./WatchVideoMediaList";
 import { EnlargedImageDialog } from "./EnlargedImageDialog";
 
-// メディアリストの表示制御（一時的に非表示）
-// 過去のbotによる不適切な画像のクレンジング方法を検討中
-const ENABLE_MEDIA_LIST = false;
+// メディアリストの表示制御
+// Firestoreから画像を取得して表示
+const ENABLE_MEDIA_LIST = true;
 
 /**
  * 動画の再生および流れるコメントの表示を行う（レスポンシブ対応）
@@ -158,7 +158,25 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
   const commentsCount = useCommentCountGraph(thread, bounds, videoLength, isMobile, graphDisp);
 
   // 画像拡大表示用の状態管理
-  const [enlargedImageSrc, setEnlargedImageSrc] = useState(null);
+  const [enlargedImageMedia, setEnlargedImageMedia] = useState(null);
+
+  // 画像クリック時のハンドラー（mediaオブジェクトを受け取る）
+  const handleImageClick = useCallback((media) => {
+    if (typeof media === 'string') {
+      // 後方互換性: 文字列の場合はsrcとして扱う
+      setEnlargedImageMedia({
+        src: media,
+        videoId: id,
+        id: null,
+      });
+    } else {
+      // mediaオブジェクトの場合
+      setEnlargedImageMedia({
+        ...media,
+        videoId: id,
+      });
+    }
+  }, [id]);
 
   return (
     <WatchVideoMainPlayerContainer>
@@ -252,7 +270,7 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
               commentTimeOffset={commentTimeOffset}
               id={id}
               isMobile={isMobile}
-              onImageClick={setEnlargedImageSrc}
+              onImageClick={handleImageClick}
             />
           )}
         </WatchVideoMediaBox>
@@ -261,8 +279,10 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
        * 画像拡大表示Dialog
        */}
       <EnlargedImageDialog
-        enlargedImageSrc={enlargedImageSrc}
-        onClose={() => setEnlargedImageSrc(null)}
+        media={enlargedImageMedia}
+        onClose={() => {
+          setEnlargedImageMedia(null);
+        }}
       />
     </WatchVideoMainPlayerContainer>
   )
