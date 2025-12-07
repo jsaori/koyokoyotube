@@ -15,6 +15,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { useGetRealtimeDB, useUpdateRealtimeDB } from "../../hooks/useRealtimeDB";
 import { getVideoTitle, getChannelId } from "../../libs/initYoutube";
 import { FormCommitButton } from "../shared/StyledComponents";
+import { triggerProcessComments } from "../../libs/cloudFunctionsService";
 
 //#region ユーザー定義スタイルコンポーネント
 const JBox = styled(Box)((theme) => ({
@@ -153,7 +154,8 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   // フォーム送信処理
   const [sending, updateThreadData] = useUpdateRealtimeDB();
   const [openSnack, setOpenSnack] = useState(false);
-  const onSubmit = (data) => {
+  const [snackMessage, setSnackMessage] = useState("入力が送信されました");
+  const onSubmit = async (data) => {
     // 編集されたスレッドのバリデーション
     const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
     for (const thread of editedThreadsMap.values()) {
@@ -199,7 +201,28 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
     }
     
     json.channelId = channelId;
-    updateThreadData(`/thread/${youtubeId}`, json);
+    
+    try {
+      // Realtime Databaseに登録（新規登録 or 更新）
+      await updateThreadData(`/thread/${youtubeId}`, json);
+      
+      // Realtime Database登録後、Cloud FunctionsのHTTPエンドポイントを呼び出す
+      await triggerProcessComments(youtubeId);
+      setSnackMessage("入力が送信されました（処理を開始しました）");
+    } catch (error) {
+      // Realtime DatabaseまたはCloud Functionsのエラーを処理
+      if (error.message && error.message.includes("trigger processComments")) {
+        // Cloud Functionsの呼び出しに失敗しても、Realtime Databaseへの登録は成功しているため警告のみ
+        console.error("Failed to trigger processComments:", error);
+        setSnackMessage("入力が送信されました（処理の開始に失敗しましたが、登録は完了しています）");
+      } else {
+        // Realtime Databaseへの登録に失敗した場合
+        console.error("Failed to update Realtime Database:", error);
+        setSnackMessage("送信に失敗しました");
+        setOpenSnack(true);
+        return;
+      }
+    }
     
     // 送信後フォームのリセットを行う
     reset({
@@ -588,7 +611,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
         autoHideDuration={3000}
         open={openSnack}
         onClose={handleCloseSnack}
-        message="入力が送信されました"
+        message={snackMessage}
       />
     </JBox>
   )
