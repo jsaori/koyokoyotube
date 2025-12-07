@@ -17,6 +17,8 @@ export function usePlayingVideo() {
   const channel = query.channel || "";
   const playlistId = query.playlist || "";
   const sort = query.sort || "publishDesc";
+  const isRandom = query.random === "true";
+  const randomSeed = query.randomSeed || "";
   // 再生リストが指定されていない場合でも、動画が含まれる再生リストを検索するために再生リストデータを取得
   // channelが空の場合はデフォルトのチャンネル（koyori）を使用
   const effectiveChannel = channel !== "" ? channel : "koyori";
@@ -24,6 +26,23 @@ export function usePlayingVideo() {
   const playlist = useFireStorage(playlistPath, null);
 
   const sortChange = useMemo(() => createSortFunction(sort), [sort]);
+
+  // シード値を使ったランダム並び替え関数
+  const shuffleWithSeed = useCallback((array, seed) => {
+    const shuffled = [...array];
+    // シード値から乱数生成器を作成
+    let currentSeed = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seededRandom = () => {
+      currentSeed = (currentSeed * 9301 + 49297) % 233280;
+      return currentSeed / 233280;
+    };
+    // Fisher-Yates シャッフル
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(seededRandom() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, []);
 
   const playlistTitle = useMemo(() => {
     if (!playlist || !playlistId) return "";
@@ -37,22 +56,45 @@ export function usePlayingVideo() {
     // 探索・結合・ソートと重い処理を行うのでメモ化
     const foundPlaylist = playlist.data?.playlists?.find(p => p.id === playlistId);
     if (!foundPlaylist?.videos) return null;
-    return [...foundPlaylist.videos].sort(sortChange).filter(v => v);
-  }, [playlist, playlistId, sortChange]);
+    let sorted = [...foundPlaylist.videos].sort(sortChange).filter(v => v);
+    // ランダム再生モードの場合は、シード値を使ってランダムに並び替え
+    if (isRandom && randomSeed) {
+      sorted = shuffleWithSeed(sorted, randomSeed);
+    }
+    return sorted;
+  }, [playlist, playlistId, sortChange, isRandom, randomSeed, shuffleWithSeed]);
 
   // クエリパラメータに基づくリストのindexに対応する動画を読み込み
   const navigateClickVideo = useCallback((index) => {
     if (!videosData || index < 0 || index >= videosData.length) return;
-    navigate(`/watch/${videosData[index].id}?channel=${effectiveChannel}&playlist=${playlistId}&sort=${sort}`);
-  }, [effectiveChannel, playlistId, sort, videosData, navigate]);
+    const queryParams = new URLSearchParams();
+    queryParams.set('channel', effectiveChannel);
+    queryParams.set('playlist', playlistId);
+    if (isRandom && randomSeed) {
+      queryParams.set('random', 'true');
+      queryParams.set('randomSeed', randomSeed);
+    } else {
+      queryParams.set('sort', sort);
+    }
+    navigate(`/watch/${videosData[index].id}?${queryParams.toString()}`);
+  }, [effectiveChannel, playlistId, sort, isRandom, randomSeed, videosData, navigate]);
 
   // クエリパラメータから、現在再生中の動画の次のindexの動画を読み込み
   const navigateNextVideo = useCallback(() => {
     if (!videosData || !videoId) return;
     const currentIndex = videosData.findIndex(video => video.id === videoId);
     if (currentIndex === -1 || currentIndex + 1 >= videosData.length) return;
-    navigate(`/watch/${videosData[currentIndex + 1].id}?channel=${effectiveChannel}&playlist=${playlistId}&sort=${sort}`);
-  }, [effectiveChannel, playlistId, sort, videoId, videosData, navigate]);
+    const queryParams = new URLSearchParams();
+    queryParams.set('channel', effectiveChannel);
+    queryParams.set('playlist', playlistId);
+    if (isRandom && randomSeed) {
+      queryParams.set('random', 'true');
+      queryParams.set('randomSeed', randomSeed);
+    } else {
+      queryParams.set('sort', sort);
+    }
+    navigate(`/watch/${videosData[currentIndex + 1].id}?${queryParams.toString()}`);
+  }, [effectiveChannel, playlistId, sort, isRandom, randomSeed, videoId, videosData, navigate]);
 
   // 現在の動画が含まれる全再生リストを検索
   const playlistsContainingVideo = useMemo(() => {
@@ -69,6 +111,39 @@ export function usePlayingVideo() {
     navigate(`/watch/${videoId}?channel=${effectiveChannel}&playlist=${selectedPlaylistId}&sort=${sort}`);
   }, [effectiveChannel, sort, videoId, navigate]);
 
+  // 並べ替えを更新（ランダムモードを解除）
+  const updateSort = useCallback((newSort) => {
+    navigate(`/watch/${videoId}?channel=${effectiveChannel}&playlist=${playlistId}&sort=${newSort}`);
+  }, [effectiveChannel, playlistId, videoId, navigate]);
+
+  // 先頭から再生（最初の動画に移動）
+  const navigateToFirst = useCallback(() => {
+    if (!videosData || videosData.length === 0) return;
+    const queryParams = new URLSearchParams();
+    queryParams.set('channel', effectiveChannel);
+    queryParams.set('playlist', playlistId);
+    if (isRandom && randomSeed) {
+      queryParams.set('random', 'true');
+      queryParams.set('randomSeed', randomSeed);
+    } else {
+      queryParams.set('sort', sort);
+    }
+    navigate(`/watch/${videosData[0].id}?${queryParams.toString()}`);
+  }, [effectiveChannel, playlistId, sort, isRandom, randomSeed, videosData, navigate]);
+
+  // ランダム再生（再生リストをランダムに並び替えて先頭から再生）
+  const navigateToRandom = useCallback(() => {
+    if (!playlist || !playlistId) return;
+    const foundPlaylist = playlist.data?.playlists?.find(p => p.id === playlistId);
+    if (!foundPlaylist?.videos) return;
+    // 新しいシード値を生成
+    const newSeed = Date.now().toString() + Math.random().toString();
+    // ランダムに並び替えたリストの先頭の動画に移動
+    const shuffled = shuffleWithSeed([...foundPlaylist.videos].filter(v => v), newSeed);
+    if (shuffled.length === 0) return;
+    navigate(`/watch/${shuffled[0].id}?channel=${effectiveChannel}&playlist=${playlistId}&random=true&randomSeed=${newSeed}`);
+  }, [effectiveChannel, playlistId, playlist, shuffleWithSeed, navigate]);
+
   return ({
     playlistTitle: playlistTitle,
     videosData: videosData,
@@ -76,8 +151,12 @@ export function usePlayingVideo() {
     navigateNextVideo: navigateNextVideo,
     playlistsContainingVideo: playlistsContainingVideo,
     navigateToPlaylist: navigateToPlaylist,
+    updateSort: updateSort,
+    navigateToFirst: navigateToFirst,
+    navigateToRandom: navigateToRandom,
     playlistId: playlistId,
     channel: effectiveChannel,
-    sort: sort
+    sort: sort,
+    isRandom: isRandom
   });
 }

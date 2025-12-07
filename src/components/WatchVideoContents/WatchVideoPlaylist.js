@@ -1,14 +1,17 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 
-import { Box, ListItem, ListItemButton, Typography } from "@mui/material";
+import { Box, ListItem, ListItemButton, Typography, IconButton, Tooltip } from "@mui/material";
 import styled from "@emotion/styled";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
 import { format } from "date-fns";
 import { LazyLoadImage } from "react-lazy-load-image-component";
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
 
 import { usePlayingVideo } from "../../hooks/usePlayingVideo";
 import { useTheme } from "@emotion/react";
+import { WatchVideoMainPanelMenuContainer, WatchVideoMainPanelMenuContents, ListSelect } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoPlaylistMain = styled(Box)(({ theme }) => ({
@@ -173,6 +176,53 @@ const PlaylistListContainer = styled(Box)(({ theme }) => ({
     height: `calc(100vh - 500px)`,
   },
 }));
+
+// メニュー用のスタイル
+const StyledPlaylistMenuContainer = styled(WatchVideoMainPanelMenuContainer)(({ theme }) => ({
+  height: "auto",
+  minHeight: 40,
+  marginTop: "4px",
+  paddingTop: "8px",
+  paddingBottom: "8px",
+}));
+
+const PlaylistMenuSelect = styled(ListSelect)(({ theme }) => ({
+  maxHeight: 32,
+  fontSize: 13
+}));
+
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  height: 32,
+  width: 32,
+  color: theme.palette.control.contrastText,
+  backgroundColor: theme.palette.control.light,
+  border: "2px solid",
+  borderColor: theme.palette.control.dark,
+  padding: "4px",
+  "&:hover": {
+    backgroundColor: theme.palette.control.dark,
+    borderColor: theme.palette.control.dark,
+  },
+}));
+
+const MenuButtonContainer = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  width: "100%",
+  gap: "8px",
+}));
+
+const MenuLeftSection = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+}));
+
+const MenuRightSection = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+}));
 //#endregion
 
 /**
@@ -186,11 +236,25 @@ export const WatchVideoPlaylist = memo(({ sx, id }) => {
     navigateClickVideo,
     playlistsContainingVideo,
     navigateToPlaylist,
+    updateSort,
+    navigateToFirst,
+    navigateToRandom,
     playlistId,
-    channel
+    channel,
+    sort,
+    isRandom
   } = usePlayingVideo();
 
   const theme = useTheme();
+
+  // 並べ替え変更ハンドラ
+  const handleSortChange = (e) => {
+    const newSort = e.target.value;
+    // ランダム順以外を選択した場合は、通常の並び替えに戻す
+    if (newSort !== "random") {
+      updateSort(newSort);
+    }
+  };
 
   // 再生リストが指定されている場合：既存の動画一覧表示
   if (playlistId && videosData) {
@@ -235,6 +299,51 @@ export const WatchVideoPlaylist = memo(({ sx, id }) => {
             </Box>
           </WatchVideoPlaylistHeaderText>
         </WatchVideoPlaylistHeader>
+        <StyledPlaylistMenuContainer>
+          <WatchVideoMainPanelMenuContents
+            textAlign="left"
+          >
+            <MenuButtonContainer>
+              <MenuLeftSection>
+                <PlaylistMenuSelect
+                  value={isRandom ? "random" : sort}
+                  onChange={handleSortChange}
+                >
+                  {isRandom ? (
+                    <option value="random">ランダム順</option>
+                  ) : (
+                    <>
+                      <option value="publishDesc">公開日時が新しい順</option>
+                      <option value="publishAsc">公開日時が古い順</option>
+                      <option value="durationDesc">再生時間が長い順</option>
+                      <option value="durationAsc">再生時間が短い順</option>
+                      <option value="titleDesc">タイトル昇順</option>
+                      <option value="titleAsc">タイトル降順</option>
+                    </>
+                  )}
+                </PlaylistMenuSelect>
+              </MenuLeftSection>
+              <MenuRightSection>
+                <Tooltip title="先頭から再生" arrow>
+                  <StyledIconButton
+                    size="small"
+                    onClick={navigateToFirst}
+                  >
+                    <PlayArrowIcon fontSize="small" />
+                  </StyledIconButton>
+                </Tooltip>
+                <Tooltip title="ランダム再生" arrow>
+                  <StyledIconButton
+                    size="small"
+                    onClick={navigateToRandom}
+                  >
+                    <ShuffleIcon fontSize="small" />
+                  </StyledIconButton>
+                </Tooltip>
+              </MenuRightSection>
+            </MenuButtonContainer>
+          </WatchVideoMainPanelMenuContents>
+        </StyledPlaylistMenuContainer>
         <WatchVideoPlaylistContainer>
           <AutoSizer>
             {({ height, width }) => (
