@@ -15,7 +15,7 @@ import { firestore } from "../../libs/InitFirebase";
 /**
  * 画像報告ダイアログコンポーネント
  */
-export const MediaReportDialog = ({ open, onClose, videoId, mediaId, imageSrc }) => {
+export const MediaReportDialog = ({ open, onClose, videoId, mediaId, imageSrc, onHide }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -39,6 +39,9 @@ export const MediaReportDialog = ({ open, onClose, videoId, mediaId, imageSrc })
       });
 
       setSuccess(true);
+      if (mediaId && onHide) {
+        onHide(mediaId);
+      }
       // 成功後、少し待ってからダイアログを閉じる
       setTimeout(() => {
         onClose();
@@ -48,6 +51,10 @@ export const MediaReportDialog = ({ open, onClose, videoId, mediaId, imageSrc })
     } catch (err) {
       console.error("Error reporting media:", err);
       setError("報告の送信に失敗しました。もう一度お試しください。");
+      // エラー時もユーザーが見たくない意図を尊重して非表示にする
+      if (mediaId && onHide) {
+        onHide(mediaId);
+      }
     } finally {
       setLoading(false);
     }
@@ -59,6 +66,13 @@ export const MediaReportDialog = ({ open, onClose, videoId, mediaId, imageSrc })
       setError(null);
       setSuccess(false);
     }
+  };
+
+  const handleHideOnly = () => {
+    if (mediaId && onHide) {
+      onHide(mediaId);
+    }
+    handleClose();
   };
 
   return (
@@ -102,6 +116,9 @@ export const MediaReportDialog = ({ open, onClose, videoId, mediaId, imageSrc })
       <DialogActions>
         <Button onClick={handleClose} disabled={loading}>
           キャンセル
+        </Button>
+        <Button onClick={handleHideOnly} disabled={loading} variant="outlined">
+          この画像を非表示
         </Button>
         <Button
           onClick={handleReport}

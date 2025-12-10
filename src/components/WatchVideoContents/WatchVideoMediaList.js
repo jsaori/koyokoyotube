@@ -191,6 +191,7 @@ export const WatchVideoMediaList = ({
   // 報告ダイアログの状態管理
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState(null);
+  const [hiddenMediaIds, setHiddenMediaIds] = useState(new Set());
   
   const {
     mediaScrollContainerRef,
@@ -205,6 +206,17 @@ export const WatchVideoMediaList = ({
     stopScrolling,
   } = useMediaList(firestoreMedia, id, onImageClick);
 
+  // 動画が変わったら非表示リストをリセット
+  useEffect(() => {
+    setHiddenMediaIds(new Set());
+  }, [id]);
+
+  // 非表示指定されたメディアを除外
+  const visibleMedia = useMemo(() => {
+    if (!validMedia) return [];
+    return validMedia.filter(media => !hiddenMediaIds.has(media.id));
+  }, [validMedia, hiddenMediaIds]);
+
   // 右クリックで報告ダイアログを開く
   const handleContextMenu = useCallback((e, media) => {
     e.preventDefault();
@@ -216,14 +228,28 @@ export const WatchVideoMediaList = ({
     setReportDialogOpen(true);
   }, [id]);
 
+  const handleDialogClose = useCallback(() => {
+    setReportDialogOpen(false);
+    setReportTarget(null);
+  }, []);
+
+  const handleHideMedia = useCallback((mediaId) => {
+    if (!mediaId) return;
+    setHiddenMediaIds(prev => {
+      const next = new Set(prev);
+      next.add(mediaId);
+      return next;
+    });
+  }, []);
+
   if (isMobile) return null;
 
   return (
     <>
-      {validMedia.length > 0 && (
+      {visibleMedia.length > 0 && (
         <>
           <WatchVideoMediaScrollContainer ref={mediaScrollContainerRef}>
-            {validMedia.map((media, index) => {
+            {visibleMedia.map((media, index) => {
               // 読み込み成功した画像のみ表示
               if (loadedImages.has(media.src)) {
                 const posMs = Number(media.posMs) || 0;
@@ -279,10 +305,11 @@ export const WatchVideoMediaList = ({
       )}
       <MediaReportDialog
         open={reportDialogOpen}
-        onClose={() => setReportDialogOpen(false)}
+        onClose={handleDialogClose}
         videoId={reportTarget?.videoId}
         mediaId={reportTarget?.mediaId}
         imageSrc={reportTarget?.imageSrc}
+        onHide={handleHideMedia}
       />
     </>
   );

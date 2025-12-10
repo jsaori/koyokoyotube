@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot } from "firebase/firestore";
 import { firestore } from "../libs/InitFirebase";
 
 /**
@@ -24,11 +24,12 @@ export const useFirestoreMedia = (videoId) => {
 
     // videos/{videoId}/media コレクションから取得
     // 条件: status === 'approved'
-    // 注意: orderByは複合インデックスが必要なため、クライアント側でソート
+    // ソート: posMsの昇順（サーバー側でソート）
     const mediaRef = collection(firestore, `videos/${videoId}/media`);
     const q = query(
       mediaRef,
-      where("status", "==", "approved")
+      where("status", "==", "approved"),
+      orderBy("posMs", "asc")
     );
 
     // リアルタイムリスナーを設定
@@ -46,12 +47,7 @@ export const useFirestoreMedia = (videoId) => {
             ...data,
           });
         });
-        // クライアント側でposMsの昇順にソート
-        mediaData.sort((a, b) => {
-          const posMsA = Number(a.posMs) || 0;
-          const posMsB = Number(b.posMs) || 0;
-          return posMsA - posMsB;
-        });
+        // サーバー側でソート済みのため、クライアント側でのソートは不要
         setMedia(mediaData);
         setLoading(false);
       },
