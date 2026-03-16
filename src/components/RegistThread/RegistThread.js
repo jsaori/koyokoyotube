@@ -95,7 +95,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
             .required("実況スレ URL は必須です")
             .url("URLが不正です")
             .max(STRING_MAX, "URLが不正です")
-            .matches(/((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/, { message: "URLが不正です"})
+            .matches(/((5ch.io).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/, { message: "URLが不正です"})
             .test("duplicated-threads", "実況スレURLが重複しています", validateDuplicatedThreads)
         }),
       )
@@ -160,7 +160,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     // 編集されたスレッドのバリデーション
-    const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
+    const threadPattern = /((5ch.io).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
     for (const thread of editedThreadsMap.values()) {
       const url = thread.url;
       if (!url || !threadPattern.test(url)) {
@@ -487,7 +487,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
                     return true;
                   }
                   // 実況スレURL形式チェック
-                  const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
+                  const threadPattern = /((5ch.io).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
                   if (displayUrl !== "" && !threadPattern.test(displayUrl)) {
                     return true;
                   }
@@ -520,7 +520,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
                   if (!urlPattern.test(displayUrl) && displayUrl !== "") {
                     return "URLが不正です";
                   }
-                  const threadPattern = /((5ch.net).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
+                  const threadPattern = /((5ch.io).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
                   if (displayUrl !== "" && !threadPattern.test(displayUrl)) {
                     return "URLが不正です";
                   }
