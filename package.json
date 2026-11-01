@@ -33,6 +33,7 @@
     "yup": "^0.32.11"
   },
   "scripts": {
+    "test": "node --test tests/*.test.mjs",
     "start": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1"
