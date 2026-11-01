@@ -31,6 +31,9 @@ jobs:
       - name: Audit dependencies
         run: npm audit --omit=dev
 
+      - name: Test
+        run: npm test
+
       - name: Build
         env:
           REACT_APP_FIREBASE_APIKEY: ${{ secrets.REACT_APP_FIREBASE_APIKEY }}
