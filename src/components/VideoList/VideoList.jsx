@@ -28,30 +28,22 @@ export const VideoList = memo(({ sx, videoData }) => {
   }, [query]);
 
   const searchList = useMemo(() => {
-    const search = query.get('search_query') !== null ? query.get('search_query') : "";
-    // 空欄の場合は全件表示
-    if (search === "") {
-      // IDで重複排除（最初に出現したIDのみを保持）
-      const uniqueMap = new Map();
-      videoData.forEach((video) => {
-        if (!uniqueMap.has(video.id)) {
-          uniqueMap.set(video.id, video);
-        }
-      });
-      return Array.from(uniqueMap.values());
+    const search = query.get("search_query") || "";
+    let titlePattern;
+    try {
+      titlePattern = new RegExp(search, "i");
+    } catch {
+      // 入力途中の括弧などは通常の文字として検索する。
     }
-    // 検索クエリがある場合はフィルタリング
-    const filtered = videoData.filter((video) => {
-      const reg = new RegExp(search, 'i');
-      return (reg.test(video.title));
-    });
-    // IDで重複排除（最初に出現したIDのみを保持）
+    const registeredOnly = query.get("registered") === "1";
     const uniqueMap = new Map();
-    filtered.forEach((video) => {
-      if (!uniqueMap.has(video.id)) {
+    for (const video of videoData) {
+      if (registeredOnly && !video.comments) continue;
+      const matches = titlePattern ? titlePattern.test(video.title) : video.title.toLowerCase().includes(search.toLowerCase());
+      if (matches && !uniqueMap.has(video.id)) {
         uniqueMap.set(video.id, video);
       }
-    });
+    }
     return Array.from(uniqueMap.values());
   }, [query, videoData]);
 
@@ -93,7 +85,7 @@ export const VideoList = memo(({ sx, videoData }) => {
                 page={page > 0 ? page : 1}
                 sort={sort}
               />
-              <div>キーワードに一致する結果が見つかりませんでした</div>
+              <div>条件に一致する動画が見つかりませんでした</div>
             </>
           ) : (
             <>

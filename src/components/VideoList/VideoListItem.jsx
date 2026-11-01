@@ -37,7 +37,7 @@ const VideoListListItemButton = styled(ListItemButton)(({ theme }) => ({
   },
   borderStyle: "none",
   padding: 0,
-  gap: 16
+  gap: 'clamp(8px, 2vw, 16px)'
 }));
 
 const VideoListMedia = styled(Box)(({ theme }) => ({
@@ -122,14 +122,12 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
   // 動画コンテンツクリックイベント
   const handleClickVideo = () => {
     const playlistQuery = listId ? `?channel=${chname}&playlist=${listId}&sort=${sort}` : "";
-    navigate(`/watch/${videoId}${playlistQuery}`);
+    navigate(`/watch/${videoId}${playlistQuery}`, { state: { timing: { id: videoId, startTime, endTime, duration } } });
   };
 
   // 公開日付文字列
   const publishDateString = startTime !== "" ? `${format(new Date(startTime), 'yyyy/MM/dd HH:mm')} 開始` : `${format(new Date(publishedAt), 'yyyy/MM/dd HH:mm')} 公開`;
 
-  // コメントズレの可能性があれば表示
-  const diffString = (startTime !== "" && Math.abs((new Date(endTime) - new Date(startTime)) /1000 - duration) > 30 ) ? `コメントズレ可能性有 : 配信時間 - 動画時間 = ${Math.floor((new Date(endTime) - new Date(startTime)) /1000 - duration)}秒` : "";
 
   // 動画時間文字列
   const videoDuration = intervalToDuration({ start: 0, end: duration * 1000 });
@@ -177,10 +175,13 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
             primaryTypographyProps={{
               style: {
                 height: 'auto',
-                lineHeight: !isMobile ? '20px' : '12px',
+                lineHeight: !isMobile ? '20px' : '18px',
+                display: '-webkit-box',
+                WebkitLineClamp: isMobile ? 2 : 3,
+                WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
-                wordBreak: 'break-all',
-                fontSize: !isMobile ? '15px' : '10px'
+                overflowWrap: 'anywhere',
+                fontSize: !isMobile ? '15px' : '14px'
               }
             }}
           />
@@ -192,17 +193,8 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                fontSize: !isMobile ? '12px' : '8px',
-                paddingTop: !isMobile ? '4px' : '1px'
-              }
-            }}
-            secondary={diffString}
-            secondaryTypographyProps={{
-              style: {
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                fontSize: !isMobile ? '12px' : '8px',
+                fontSize: '12px',
+                paddingRight: 32,
                 paddingTop: !isMobile ? '4px' : '1px'
               }
             }}
@@ -210,6 +202,7 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
         </VideoListDiscription>
       </VideoListListItemButton>
       <ChatButton
+        aria-label="実況スレの登録内容を開く"
         onClick={handleClickOpen}
       >
         {comments ?
