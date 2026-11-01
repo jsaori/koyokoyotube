@@ -17,6 +17,8 @@ import { getVideoTitle, getChannelId } from "../../libs/initYoutube";
 import { FormCommitButton } from "../shared/StyledComponents";
 import { triggerProcessComments } from "../../libs/cloudFunctionsService";
 
+import { isThreadUrl } from "../../libs/threadUrl.mjs";
+
 //#region ユーザー定義スタイルコンポーネント
 const JBox = styled(Box)((theme) => ({
   width: "100%",
@@ -62,10 +64,12 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
     const uneditedRegisteredThreads = registeredData.threads
       .filter((_, index) => !editedThreadsMap.has(index) && !deletedThreadIndices.has(index))
       .map(t => t.url);
-    // スラッシュを全て抜いた文字列で比較を行う
-    const data = [...uneditedRegisteredThreads, ...editedThreads, ...watchThreads.filter(v => v.url.replace(/\//g, '') !== thread.replace(/\//g, ''))];
-    return (!data.find((v => v.url.replace(/\//g, '') === thread.replace(/\//g, '')))
-            && watchThreads.filter(v => v.url.replace(/\//g, '') !== thread.replace(/\//g, '')).length + 1 === watchThreads.length);
+    // 末尾のスラッシュの有無を区別しない
+    if (!thread) return true;
+    const comparable = (url) => url.replace(/\/+$/, "");
+    const key = comparable(thread);
+    return ![...uneditedRegisteredThreads, ...editedThreads].some(url => comparable(url) === key)
+      && watchThreads.filter(item => comparable(item.url) === key).length <= 1;
   }
 
   // 実況スレ登録クライアントバリデーションルール
@@ -95,7 +99,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
             .required("実況スレ URL は必須です")
             .url("URLが不正です")
             .max(STRING_MAX, "URLが不正です")
-            .matches(/((5ch.io).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/, { message: "URLが不正です"})
+            .test("thread-url", "URLが不正です", isThreadUrl)
             .test("duplicated-threads", "実況スレURLが重複しています", validateDuplicatedThreads)
         }),
       )
@@ -160,10 +164,11 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     // 編集されたスレッドのバリデーション
-    const threadPattern = /((5ch.io).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
     for (const thread of editedThreadsMap.values()) {
       const url = thread.url;
-      if (!url || !threadPattern.test(url)) {
+      if (!isThreadUrl(url)) {
+        setIsSubmitting(false);
+        setSnackMessage("実況スレURLが不正です");
         // バリデーションエラーがある場合は送信を阻止
         setOpenSnack(true);
         // エラーメッセージを表示するためにSnackbarを更新（後で改善可能）
@@ -487,8 +492,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
                     return true;
                   }
                   // 実況スレURL形式チェック
-                  const threadPattern = /((5ch.io).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
-                  if (displayUrl !== "" && !threadPattern.test(displayUrl)) {
+                  if (displayUrl !== "" && !isThreadUrl(displayUrl)) {
                     return true;
                   }
                   // 重複チェック
@@ -520,8 +524,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
                   if (!urlPattern.test(displayUrl) && displayUrl !== "") {
                     return "URLが不正です";
                   }
-                  const threadPattern = /((5ch.io).+\/([0-9]{10})|((shitaraba.net).+\/25835\/([0-9]{10}))|((bbs.jpnkn.com).+\/hkikyr\/([0-9]{10})))($|\/)/;
-                  if (displayUrl !== "" && !threadPattern.test(displayUrl)) {
+                  if (displayUrl !== "" && !isThreadUrl(displayUrl)) {
                     return "URLが不正です";
                   }
                   // 重複チェック

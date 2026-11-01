@@ -1,6 +1,6 @@
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Snackbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import useMeasure from "react-use-measure";
 import { Layer, Stage } from "react-konva";
@@ -46,17 +46,30 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     height: '100%'
   });
 
-  const state = useLocation().state;
-  useEffect(() => {
-    if (!playerInstance || !state) return;
-    playerInstance.seekTo(state.jumpTime);
-  }, [playerInstance, state]);
+  const { state, search, pathname } = useLocation();
+  const rawTime = new URLSearchParams(search).get("t");
+  const startSeconds = /^\d+$/.test(rawTime) && Number.isSafeInteger(Number(rawTime)) ? Number(rawTime) : undefined;
+  const [shareMessage, setShareMessage] = useState("");
+  const copyScene = async () => {
+    const url = new URL(pathname, window.location.origin);
+    url.searchParams.set("t", Math.floor(playerInstance.getCurrentTime()));
+    try {
+      await navigator.clipboard.writeText(url.href);
+      setShareMessage("この場面のリンクをコピーしました");
+    } catch {
+      window.prompt("この場面のリンクをコピーしてください", url.href);
+    }
+  };
 
   // ※動画が変遷する度にonStateChangeの実行回数が増えていくことに気付く※
   // Youtube Iframe APIのイベントリスナーはaddはできてもremoveできないバグがある
   // addしたonStateChange内で最新の関数を呼べば良いので以下の小細工を行う
   // イベントリスナーが増えていくことに対するパフォーマンスは考慮できていない
-  const { navigateNextVideo } = usePlayingVideo();
+  const { navigateNextVideo, playlistsContainingVideo } = usePlayingVideo();
+  const timing = useMemo(() => state?.timing?.id === id ? state.timing :
+    playlistsContainingVideo[0]?.videos.find(video => video?.id === id), [state?.timing, id, playlistsContainingVideo]);
+  const timeDiff = timing?.startTime && timing.endTime
+    ? Math.floor((Date.parse(timing.endTime) - Date.parse(timing.startTime)) / 1000 - timing.duration) : 0;
   const navigateNextVideoRef = useRef();
   navigateNextVideoRef.current = navigateNextVideo;
 
@@ -98,16 +111,18 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     }
   }, [playerInstance, onStateChange]);
 
-  // Youtubeプレイヤーロード完了時処理
+  // 初回・動画変更時はロードに開始位置を渡し、同じ動画内ではシークする。
+  const loaded = useRef(null);
   useEffect(() => {
-    // プレイヤーロード後に指定動画をロード
-    if (playerInstance) {
-      const param = {
-        videoId: id
-      };
-      playerInstance.loadVideoById(param);
+    if (!playerInstance) return;
+    const jumpTime = Number.isFinite(state?.jumpTime) ? state.jumpTime : startSeconds;
+    if (loaded.current?.player !== playerInstance || loaded.current.id !== id) {
+      playerInstance.loadVideoById({ videoId: id, startSeconds: jumpTime ?? 0 });
+    } else if (jumpTime !== undefined) {
+      playerInstance.seekTo(jumpTime, true);
     }
-  }, [playerInstance, id]);
+    loaded.current = { player: playerInstance, id };
+  }, [playerInstance, id, state, startSeconds]);
 
   // Youtube動画再生時間管理
   // currentMSに現在の再生時間(ms)を格納
@@ -256,6 +271,13 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
           </WatchVideoMainPlayerLayer>
         </WatchVideoMainPlayer>
       </FullScreen>
+      <Box sx={{ bgcolor: 'background.paper', px: 1, py: 0.5 }}>
+        <Button size="small" disabled={!playerInstance} onClick={copyScene}>この場面のリンクをコピー</Button>
+        {Math.abs(timeDiff) > 30 && <Typography variant="body2">
+          配信時間と動画の長さに{Math.abs(timeDiff)}秒の差があります。実況がずれる場合はコメント設定で調整できます。
+        </Typography>}
+      </Box>
+      <Snackbar open={Boolean(shareMessage)} message={shareMessage} autoHideDuration={2500} onClose={() => setShareMessage("")} />
       {/**
        * 何かに使うかもしれない枠（デスクトップのみ）
        * 絵師の画像一覧 or コメント投稿欄

@@ -1,7 +1,7 @@
 import { memo } from "react";
 
 import styled from "@emotion/styled";
-import { Box, Pagination, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Checkbox, FormControlLabel, Pagination, Typography, useMediaQuery, useTheme } from "@mui/material";
 
 import { SearchBar } from "../SearchBar/SearchBar";
 import { ListSelect } from "../shared/StyledComponents";
@@ -41,7 +41,7 @@ const VideoListPagenation = styled(Box)(({ theme }) => ({
 export const VideoListMenu = memo(({ sx, videoCount, page, sort }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { updateQuery } = useQueryString();
+  const { query, updateQuery } = useQueryString();
 
   // ページ変更イベント
   const handlePageChange = (event, value) => {
@@ -56,6 +56,11 @@ export const VideoListMenu = memo(({ sx, videoCount, page, sort }) => {
   return (
     <VideoListMenuMain {...sx}>
       <SearchBar placeholder="動画を検索" sx={{ height: 36 }} />
+      <FormControlLabel
+        control={<Checkbox checked={query.registered === "1"} onChange={(e) =>
+          updateQuery({ registered: e.target.checked ? "1" : null }, { resetPage: true })} />}
+        label="実況スレ登録済みだけ"
+      />
       <Typography fontSize={14} ml={1}>{videoCount}件</Typography>
       {/**
        * 動画のソート選択ドロップダウン

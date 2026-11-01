@@ -160,7 +160,7 @@ export const WatchVideoTimeStamp = memo(({ sx, timeStamp }) => {
             pathname: `${location.pathname}`,
             search: `${location.search}`
           }}
-          state={{jumpTime: TimeToSeconds(domNode.children[0].data)}}
+          state={{...location.state, jumpTime: TimeToSeconds(domNode.children[0].data)}}
         >
           {domToReact(domNode.children)}
         </Link>
