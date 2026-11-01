@@ -6,5 +6,5 @@ export const CHANNEL_ID_LIST = {
 
 // Cloud Functions URL
 // 環境変数から読み込む。未設定の場合はデフォルト値を使用
-export const CLOUD_FUNCTIONS_URL = process.env.REACT_APP_CLOUD_FUNCTIONS_URL || 
+export const CLOUD_FUNCTIONS_URL = import.meta.env.REACT_APP_CLOUD_FUNCTIONS_URL ||
   "https://asia-northeast1-koyokoyotube.cloudfunctions.net";

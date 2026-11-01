@@ -10,7 +10,7 @@ const YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/";
  */
 const makeYouTubeApiRequest = async (endpoint, params = {}) => {
   try {
-    const apiKey = process.env.REACT_APP_FIREBASE_APIKEY;
+    const apiKey = import.meta.env.REACT_APP_FIREBASE_APIKEY;
     if (!apiKey) {
       throw new Error('YouTube API key is not configured');
     }
