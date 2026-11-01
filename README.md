@@ -23,10 +23,12 @@ REACT_APP_FIREBASE_APP_ID=
 REACT_APP_FIREBASE_MEASUREMENT_ID=
 ```
 
+Vite でビルドします。REACT_APP_ で始まる変数は公開設定としてビルド時に埋め込まれます。
+
 ### ビルドコマンド
 
 ```bash
-npm install
+npm ci
 npm start
 npm run build
 ```
