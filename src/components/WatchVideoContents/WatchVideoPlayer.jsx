@@ -46,7 +46,7 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
     height: '100%'
   });
 
-  const { state, search, pathname } = useLocation();
+  const { state, search, pathname, key: navigationKey } = useLocation();
   const rawTime = new URLSearchParams(search).get("t");
   const startSeconds = /^\d+$/.test(rawTime) && Number.isSafeInteger(Number(rawTime)) ? Number(rawTime) : undefined;
   const [shareMessage, setShareMessage] = useState("");
@@ -115,14 +115,15 @@ export const WatchVideoPlayer = memo(({ sx, id, thread, commentDisp, graphDisp, 
   const loaded = useRef(null);
   useEffect(() => {
     if (!playerInstance) return;
-    const jumpTime = Number.isFinite(state?.jumpTime) ? state.jumpTime : startSeconds;
+    // 旧版で開いた履歴にも対応し、URLに時刻があればそちらを優先する。
+    const jumpTime = startSeconds ?? (Number.isFinite(state?.jumpTime) ? state.jumpTime : undefined);
     if (loaded.current?.player !== playerInstance || loaded.current.id !== id) {
       playerInstance.loadVideoById({ videoId: id, startSeconds: jumpTime ?? 0 });
     } else if (jumpTime !== undefined) {
       playerInstance.seekTo(jumpTime, true);
     }
     loaded.current = { player: playerInstance, id };
-  }, [playerInstance, id, state, startSeconds]);
+  }, [playerInstance, id, state, startSeconds, navigationKey]);
 
   // Youtube動画再生時間管理
   // currentMSに現在の再生時間(ms)を格納

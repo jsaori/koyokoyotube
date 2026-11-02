@@ -150,17 +150,19 @@ export const WatchVideoTimeStamp = memo(({ sx, timeStamp }) => {
   };
 
   // タイムスタンプコメント文字列からリンクを抽出しkoyokoyotubeのリンクに変換
-  // とりあえずURLクエリは増やさずstateを渡して再生時間のジャンプを行う
   const location = useLocation();
   const replace = (domNode) => {
     if (domNode.name === "a" && domNode.attribs.href && domNode.children.length > 0) {
+      const label = domNode.children[0].data?.trim();
+      if (!/^\d+(?::\d+){1,2}$/.test(label)) {
+        return /^https?:\/\//i.test(domNode.attribs.href) ? undefined : <>{domToReact(domNode.children)}</>;
+      }
+      const params = new URLSearchParams(location.search);
+      params.set("t", TimeToSeconds(label));
       return (
         <Link
-          to={{
-            pathname: `${location.pathname}`,
-            search: `${location.search}`
-          }}
-          state={{...location.state, jumpTime: TimeToSeconds(domNode.children[0].data)}}
+          to={{ pathname: location.pathname, search: params.toString() }}
+          state={location.state}
         >
           {domToReact(domNode.children)}
         </Link>
