@@ -192,7 +192,7 @@ export const RegistThread = memo(({ sx, defaultYoutubeURL="" }) => {
         const originalThread = registeredData.threads[index];
         return {
           url: thread.url,
-          // cacheフラグは既存の値を保持（koyokoyoactionsで使われないため考慮不要）
+          // cacheフラグは既存の値を保持（koyokoyofunctionsが書き込むのみで参照されないため考慮不要）
           ...(originalThread.cache !== undefined && { cache: originalThread.cache })
         };
       });
