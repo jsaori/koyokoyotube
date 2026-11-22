@@ -6,7 +6,7 @@ import styled from "@emotion/styled";
 //#region ユーザー定義スタイルコンポーネント
 const WatchVideoHeaderContainer = styled(Box)(({ theme }) => ({
   marginBottom: 16,
-  marginTop: 16,
+  marginTop: 8,
   position: "relative",
   height: 21,
   whiteSpace: "nowrap",

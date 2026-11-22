@@ -1,8 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useNavigationType, useParams } from "react-router-dom";
 
 import styled from "@emotion/styled";
 import { Box } from "@mui/material";
 
+import { WatchVideoBreadcrumbs } from "../components/WatchVideoContents/WatchVideoBreadcrumbs";
 import { WatchVideoHeader } from "../components/WatchVideoContents/WatchVideoHeader";
 import { WatchVideoMain } from "../components/WatchVideoContents/WatchVideoMain";
 import { useEffect, useState, useCallback } from "react";
@@ -40,6 +41,14 @@ export default function WatchPage() {
   // 動画IDの取得
   const videoid = useParams().videoid;
 
+  // 一覧のスクロール位置のまま開かないよう、動画を開いたら先頭へスクロールする（戻る・進むは除く）
+  const navigationType = useNavigationType();
+  useEffect(() => {
+    if (navigationType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+  }, [videoid, navigationType]);
+
   // 動画タイトルの取得
   // Youtubeのメタ情報から取得する
   const [title, setTitle] = useState("");
@@ -56,6 +65,10 @@ export default function WatchPage() {
   return (
     <WatchPageFullWidth>
       <WatchPageContainer>
+        {/**
+         * 一覧へ戻るリンク
+         */}
+        <WatchVideoBreadcrumbs isMobile={isMobile} />
         {/**
          * ヘッダ（デスクトップのみ）
          */}
