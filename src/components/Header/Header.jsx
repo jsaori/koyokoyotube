@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { useLocation } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 
 import styled from "@emotion/styled";
 import { AppBar, Box, IconButton, Link, Toolbar } from "@mui/material";
@@ -42,7 +42,8 @@ export default function Header() {
             }}
           >
             <Link
-              href="/"
+              component={RouterLink}
+              to="/"
               color="inherit"
               underline="none"
             >

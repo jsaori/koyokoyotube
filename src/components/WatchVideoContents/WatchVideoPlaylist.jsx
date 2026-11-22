@@ -1,6 +1,7 @@
 import { memo } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
-import { Box, ListItem, ListItemButton, Typography, IconButton, Tooltip } from "@mui/material";
+import { Box, Link, ListItem, ListItemButton, Typography, IconButton, Tooltip } from "@mui/material";
 import styled from "@emotion/styled";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { FixedSizeList } from "react-window";
@@ -11,6 +12,8 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 
 import { usePlayingVideo } from "../../hooks/usePlayingVideo";
 import { useTheme } from "@emotion/react";
+import { buildPlaylistPath } from "../../libs/watchBreadcrumbs.mjs";
+import { CHANNEL_NAMES } from "../../libs/constants";
 import { WatchVideoMainPanelMenuContainer, WatchVideoMainPanelMenuContents, ListSelect } from "../shared/StyledComponents";
 
 //#region ユーザー定義スタイルコンポーネント
@@ -240,6 +243,7 @@ export const WatchVideoPlaylist = memo(({ sx, id }) => {
     navigateToFirst,
     navigateToRandom,
     playlistId,
+    channel,
     sort,
     isRandom
   } = usePlayingVideo();
@@ -293,9 +297,14 @@ export const WatchVideoPlaylist = memo(({ sx, id }) => {
             <WatchVideoPlaylistHeaderSubText>
               マイリスト
             </WatchVideoPlaylistHeaderSubText>
-            <Box>
+            <Link
+              component={RouterLink}
+              to={buildPlaylistPath({ channel, knownChannels: CHANNEL_NAMES, playlistId, sort, isRandom })}
+              color="inherit"
+              underline="hover"
+            >
               {playlistTitle}
-            </Box>
+            </Link>
           </WatchVideoPlaylistHeaderText>
         </WatchVideoPlaylistHeader>
         <StyledPlaylistMenuContainer>

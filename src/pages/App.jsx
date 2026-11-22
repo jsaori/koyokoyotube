@@ -38,9 +38,9 @@ function App() {
              * ルートへのアクセス時、博衣こよりのページに遷移
              * チャンネルへのアクセス時もついでに博衣こよりのページに遷移
              */}
-            <Route index element={<Navigate to="channel/koyori/playlist" />} />
-            <Route path="channel" element={<Navigate to="koyori/playlist" />} />
-            <Route path="channel/:chname" element={<Navigate to="playlist" />} />
+            <Route index element={<Navigate to="channel/koyori/playlist" replace />} />
+            <Route path="channel" element={<Navigate to="koyori/playlist" replace />} />
+            <Route path="channel/:chname" element={<Navigate to="playlist" replace />} />
             <Route path="channel/:chname/playlist" element={<ChannelPage subpage={0} />} />
             <Route path="channel/:chname/video" element={<ChannelPage subpage={1} />} />
             <Route path="channel/:chname/j" element={<ChannelPage subpage={99} />} />

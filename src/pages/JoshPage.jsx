@@ -9,8 +9,8 @@ export default function JoshPage() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // 初期ページに遷移
-    navigate("/channel/koyori");
+    // 初期ページに遷移（履歴を置き換え、戻るで再びここへ来てリダイレクトされないようにする）
+    navigate("/channel/koyori", { replace: true });
   }, [navigate]);
 
   return (

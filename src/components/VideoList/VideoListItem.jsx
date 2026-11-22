@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import styled from "@emotion/styled";
 import { Box, IconButton, ListItem, ListItemButton, ListItemText, useMediaQuery, useTheme } from "@mui/material";
@@ -117,12 +117,19 @@ export const VideoListItem = memo(({ sx, videoId, videoTitle, publishedAt, start
   
   // ルーティング用
   const navigate = useNavigate();
+  const location = useLocation();
   const chname = useParams().chname;
 
   // 動画コンテンツクリックイベント
+  // from: 視聴画面のパンくずで、開いたときの検索条件・ページの一覧へ戻すために渡す（共有用の URL には載せない）
   const handleClickVideo = () => {
     const playlistQuery = listId ? `?channel=${chname}&playlist=${listId}&sort=${sort}` : "";
-    navigate(`/watch/${videoId}${playlistQuery}`, { state: { timing: { id: videoId, startTime, endTime, duration } } });
+    navigate(`/watch/${videoId}${playlistQuery}`, {
+      state: {
+        timing: { id: videoId, startTime, endTime, duration },
+        from: location.pathname + location.search,
+      },
+    });
   };
 
   // 公開日付文字列

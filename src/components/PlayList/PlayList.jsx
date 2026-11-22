@@ -5,6 +5,7 @@ import { Box } from "@mui/material";
 
 import { PlayListContainer } from "./PlayListContainer";
 import { PublicPlayListContainer } from "./PublicPlayListContainer";
+import { useScrollRestoration } from "../../hooks/useScrollRestoration";
 
 /**
  * 特定再生リストのコンテンツ一覧
@@ -17,8 +18,9 @@ export const PlayList = memo(({ sx, playlistData }) => {
   useEffect(() => {
     const id = param.listid !== undefined ? param.listid : 0;
     setListId(id);
-    window.scrollTo(0, 0);
   }, [param.listid]);
+  // 再生リストを切り替えたら先頭へ、ブラウザの戻るでは元の位置へスクロールする
+  useScrollRestoration(param.listid ?? "");
 
   return (
     <Box {...sx}>

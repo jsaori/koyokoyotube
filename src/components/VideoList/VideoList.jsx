@@ -6,6 +6,7 @@ import { VideoListFooter } from "./VideoListFooter";
 import { VideoListItem } from "./VideoListItem";
 import { VideoListMenu } from "./VideoListMenu";
 import { createSortFunction } from "../../libs/utilities";
+import { useScrollRestoration } from "../../hooks/useScrollRestoration";
 
 /**
  * 動画一覧
@@ -24,8 +25,9 @@ export const VideoList = memo(({ sx, videoData }) => {
     } else {
       setPage(1);
     }
-    window.scrollTo(0, 0);
   }, [query]);
+  // 遷移するたびに（同じ URL でも）先頭へ、ブラウザの戻るでは元の位置へスクロールする
+  useScrollRestoration(location.key);
 
   const searchList = useMemo(() => {
     const search = query.get("search_query") || "";
